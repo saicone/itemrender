@@ -1,0 +1,23 @@
+plugins {
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.14' apply false
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    }
+}
+
+subprojects {
+    apply plugin: 'io.papermc.paperweight.userdev'
+}
+
+dependencies {
+    // Old version, only for Java 17 support
+    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
