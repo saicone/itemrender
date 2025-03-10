@@ -39,7 +39,7 @@ ItemRenderAPI.register("myedit:id", item -> {
 }).when(ItemView.INVENTORY) // Edit client-side inventory items
   .check(item -> item != null && item.hasTag()); // Condition to apply an edit
 
-// Edit with player that are viewing the items
+// Edit with player
 ItemRenderAPI.register("myedit:id", (player, item) -> {
     // Edit the item with player that are viewing it
     
