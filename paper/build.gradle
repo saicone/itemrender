@@ -1,5 +1,6 @@
 plugins {
     id 'io.papermc.paperweight.userdev' version '2.0.0-beta.14' apply false
+    id 'com.gradleup.shadow'
 }
 
 allprojects {
@@ -10,9 +11,29 @@ allprojects {
 
 subprojects {
     apply plugin: 'io.papermc.paperweight.userdev'
+
+    assemble {
+        dependsOn(reobfJar)
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version project.version
+                from components.java
+
+                artifact(reobfJar.outputJar) {
+                    classifier 'reobf'
+                }
+            }
+        }
+    }
 }
 
 dependencies {
+    implementation rootProject
     // Old version, only for Java 17 support
     compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
 }
@@ -20,6 +41,16 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withJavadocJar()
+}
+
+jar {
+    enabled = false
+    dependsOn (shadowJar)
+}
+
+shadowJar {
+    archiveClassifier.set('')
 }
 
 publishing {
@@ -29,6 +60,8 @@ publishing {
             artifactId project.name
             version project.version
             from components.java
+
+            artifact shadowJar
         }
     }
 }

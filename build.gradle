@@ -36,21 +36,19 @@ allprojects {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         withSourcesJar()
-        withJavadocJar()
     }
 }
 
 subprojects {
-    apply plugin: 'com.gradleup.shadow'
-
     dependencies {
-        implementation rootProject
+        compileOnlyApi rootProject
     }
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    withJavadocJar()
 }
 
 publishing {
