@@ -62,7 +62,8 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         return list;
     }
 
-    public boolean contains(@NotNull ItemView view) {
+    @Override
+    public boolean allow(@NotNull ItemView view) {
         return mappers.containsKey(view);
     }
 
@@ -103,8 +104,8 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         }
     }
 
-    @NotNull
-    public ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
+    @Override
+    public @NotNull ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
         final ItemHolder<PlayerT, ItemT> holder = holder(player, item, view, slot);
         apply(holder);
         return holder;

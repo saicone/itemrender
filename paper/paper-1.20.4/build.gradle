@@ -1,5 +1,6 @@
 dependencies {
     paperweight.paperDevBundle("1.20.4-R0.1-SNAPSHOT")
+    compileOnly project(':paper:paper-1.20.1')
 }
 
 java {

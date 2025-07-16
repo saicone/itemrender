@@ -2,8 +2,14 @@ package com.saicone.item.render;
 
 import com.saicone.item.mapper.AbstractItemMapper;
 import com.saicone.item.mapper.WrappedItemMapper;
+import com.saicone.item.network.PacketItemRender;
+import com.saicone.item.render.rewriter.ContainerSetContentRewriter;
+import com.saicone.item.render.rewriter.ContainerSetSlotRewriter;
+import com.saicone.item.render.rewriter.CreativeModeSlotRewriter;
 import com.saicone.item.render.rewriter.MerchantOffersRewriter;
-import com.saicone.item.render.rewriter.RecipesRewriter;
+import com.saicone.item.render.rewriter.SetEntityDataRewriter;
+import com.saicone.item.render.rewriter.SetEquipmentRewriter;
+import com.saicone.item.render.rewriter.UpdateRecipesRewriter;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,6 +17,13 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
@@ -25,19 +38,20 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class PaperItemRender extends PacketItemRender<Player> implements Listener {
+public class PaperItemRender extends PacketItemRender<Player, ItemStack, Packet<?>> implements Listener {
 
     private final Plugin plugin;
 
     public PaperItemRender(@NotNull Plugin plugin) {
-        this(plugin, null, null);
-    }
-
-    public PaperItemRender(@NotNull Plugin plugin, @Nullable RecipesRewriter<Player> recipesRewriter, @Nullable MerchantOffersRewriter<Player> merchantOffersRewriter) {
-        super(recipesRewriter, merchantOffersRewriter);
         this.plugin = plugin;
+        register(ClientboundContainerSetContentPacket.class, ContainerSetContentRewriter::new);
+        register(ClientboundContainerSetSlotPacket.class, ContainerSetSlotRewriter::new);
+        register(ServerboundSetCreativeModeSlotPacket.class, CreativeModeSlotRewriter::new);
+        register(ClientboundMerchantOffersPacket.class, MerchantOffersRewriter::new);
+        register(ClientboundSetEntityDataPacket.class, SetEntityDataRewriter::new);
+        register(ClientboundSetEquipmentPacket.class, SetEquipmentRewriter::new);
+        register(ClientboundUpdateRecipesPacket.class, UpdateRecipesRewriter::new);
     }
 
     @Override
@@ -51,7 +65,7 @@ public class PaperItemRender extends PacketItemRender<Player> implements Listene
     }
 
     @Override
-    public boolean isCreative(@NotNull Player player) {
+    public boolean creative(@NotNull Player player) {
         return player.getGameMode() == GameMode.CREATIVE;
     }
 
@@ -111,7 +125,7 @@ public class PaperItemRender extends PacketItemRender<Player> implements Listene
             @Override
             public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
                 if (msg instanceof Packet) {
-                    msg = onPacketReceive(player, (Packet<?>) msg);
+                    msg = rewrite(player, (Packet<?>) msg);
                     if (msg == null) {
                         return;
                     }
@@ -123,7 +137,7 @@ public class PaperItemRender extends PacketItemRender<Player> implements Listene
             @Override
             public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
                 if (msg instanceof Packet) {
-                    msg = onPacketSend(player, (Packet<?>) msg);
+                    msg = rewrite(player, (Packet<?>) msg);
                     if (msg == null) {
                         return;
                     }

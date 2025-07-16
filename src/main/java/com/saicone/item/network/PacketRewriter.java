@@ -1,11 +1,20 @@
 package com.saicone.item.network;
 
+import com.saicone.item.ItemView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@FunctionalInterface
-public interface PacketRewriter<PlayerT, PacketT> {
+public abstract class PacketRewriter<PlayerT, ItemT, PacketT> {
+
+    protected final PacketItemMapper<PlayerT, ItemT> mapper;
+
+    public PacketRewriter(@NotNull PacketItemMapper<PlayerT, ItemT> mapper) {
+        this.mapper = mapper;
+    }
+
+    @NotNull
+    public abstract ItemView view(@NotNull PlayerT player);
 
     @Nullable
-    PacketT rewrite(@NotNull PlayerT player, @NotNull PacketT packet);
+    public abstract PacketT rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketT packet);
 }

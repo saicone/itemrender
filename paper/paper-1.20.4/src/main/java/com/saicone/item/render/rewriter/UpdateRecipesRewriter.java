@@ -2,7 +2,7 @@ package com.saicone.item.render.rewriter;
 
 import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
-import com.saicone.item.mapper.AbstractItemMapper;
+import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
@@ -12,7 +12,9 @@ import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
@@ -21,7 +23,7 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import org.bukkit.craftbukkit.v1_20_R1.CraftRegistry;
+import org.bukkit.craftbukkit.v1_20_R3.CraftRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,11 +32,13 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, ClientboundUpdateRecipesPacket> {
+public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, ClientboundUpdateRecipesPacket> {
 
     private final NonNullList<?> EMPTY_LIST = NonNullList.create();
+    private final Object DUMMY_OBJECT = new Object();
 
     private static final MethodHandle COOKING_INGREDIENT;
 
@@ -71,23 +75,23 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
             SingleItemRecipe$ingredient.setAccessible(true);
             single$ingredient = lookup.unreflectGetter(SingleItemRecipe$ingredient);
 
-            final Field SmithingTransformRecipe$template = SmithingTransformRecipe.class.getDeclaredField("b");
+            final Field SmithingTransformRecipe$template = SmithingTransformRecipe.class.getDeclaredField("a");
             SmithingTransformRecipe$template.setAccessible(true);
             transform$template = lookup.unreflectGetter(SmithingTransformRecipe$template);
-            final Field SmithingTransformRecipe$base = SmithingTransformRecipe.class.getDeclaredField("c");
+            final Field SmithingTransformRecipe$base = SmithingTransformRecipe.class.getDeclaredField("b");
             SmithingTransformRecipe$base.setAccessible(true);
             transform$base = lookup.unreflectGetter(SmithingTransformRecipe$base);
-            final Field SmithingTransformRecipe$addition = SmithingTransformRecipe.class.getDeclaredField("d");
+            final Field SmithingTransformRecipe$addition = SmithingTransformRecipe.class.getDeclaredField("c");
             SmithingTransformRecipe$addition.setAccessible(true);
             transform$addition = lookup.unreflectGetter(SmithingTransformRecipe$addition);
 
-            final Field SmithingTrimRecipe$template = SmithingTrimRecipe.class.getDeclaredField("b");
+            final Field SmithingTrimRecipe$template = SmithingTrimRecipe.class.getDeclaredField("a");
             SmithingTrimRecipe$template.setAccessible(true);
             trim$template = lookup.unreflectGetter(SmithingTrimRecipe$template);
-            final Field SmithingTrimRecipe$base = SmithingTrimRecipe.class.getDeclaredField("c");
+            final Field SmithingTrimRecipe$base = SmithingTrimRecipe.class.getDeclaredField("b");
             SmithingTrimRecipe$base.setAccessible(true);
             trim$base = lookup.unreflectGetter(SmithingTrimRecipe$base);
-            final Field SmithingTrimRecipe$addition = SmithingTrimRecipe.class.getDeclaredField("d");
+            final Field SmithingTrimRecipe$addition = SmithingTrimRecipe.class.getDeclaredField("c");
             SmithingTrimRecipe$addition.setAccessible(true);
             trim$addition = lookup.unreflectGetter(SmithingTrimRecipe$addition);
         } catch (Throwable t) {
@@ -107,22 +111,26 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
         TRIM_ADDITION = trim$addition;
     }
 
-    protected final AbstractItemMapper<PlayerT, ItemStack> mapper;
-
-    public RecipesRewriter(@NotNull AbstractItemMapper<PlayerT, ItemStack> mapper) {
-        this.mapper = mapper;
+    public UpdateRecipesRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
+        super(mapper);
     }
 
     @Override
-    public @Nullable ClientboundUpdateRecipesPacket rewrite(@NotNull PlayerT player, @NotNull ClientboundUpdateRecipesPacket packet) {
-        final List<Recipe<?>> recipes = packet.getRecipes();
+    public @NotNull ItemView view(@NotNull PlayerT player) {
+        return ItemView.RECIPE;
+    }
+
+    @Override
+    public @Nullable ClientboundUpdateRecipesPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundUpdateRecipesPacket packet) {
+        final List<RecipeHolder<?>> recipes = packet.getRecipes();
         for (int i = 0; i < recipes.size(); i++) {
-            final Recipe<?> recipe = apply(player, recipes.get(i));
+            final RecipeHolder<?> holder = recipes.get(i);
+            final Object recipe = apply(player, view, holder.value());
             if (recipe == null) {
                 recipes.remove(i);
                 i--;
-            } else {
-                recipes.set(i, recipe);
+            } else if (recipe != DUMMY_OBJECT) {
+                recipes.set(i, new RecipeHolder<>(holder.id(), (Recipe<?>) recipe));
             }
         }
         if (recipes.isEmpty()) {
@@ -133,9 +141,9 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
 
 
     @Nullable
-    protected Recipe<?> apply(@NotNull PlayerT player, @NotNull Recipe<?> recipe) {
+    protected Object apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Recipe<?> recipe) {
         if (recipe instanceof AbstractCookingRecipe cooking) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), ItemView.RECIPE, ItemSlot.Recipe.COOKING_RESULT);
+            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.COOKING_RESULT);
             if (result.item() == null) {
                 return null;
             }
@@ -147,92 +155,92 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
                 throw new RuntimeException(t);
             }
 
-            Ingredient applied = apply(player, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
+            Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
             if (applied == null) {
                 return null;
             } else if (applied == Ingredient.EMPTY) {
                 if (!result.edited()) {
-                    return recipe;
+                    return DUMMY_OBJECT;
                 }
                 applied = ingredient;
             }
 
             if (recipe instanceof BlastingRecipe) {
-                return new BlastingRecipe(cooking.getId(), cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new BlastingRecipe(cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof CampfireCookingRecipe) {
-                return new CampfireCookingRecipe(cooking.getId(), cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new CampfireCookingRecipe(cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof SmeltingRecipe) {
-                return new SmeltingRecipe(cooking.getId(), cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new SmeltingRecipe(cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof SmokingRecipe) {
-                return new SmokingRecipe(cooking.getId(), cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new SmokingRecipe(cooking.getGroup(), cooking.category(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
             }
         } else if (recipe instanceof ShapedRecipe shaped) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), ItemView.RECIPE, ItemSlot.Recipe.SHAPED_RESULT);
+            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.SHAPED_RESULT);
             if (result.item() == null) {
                 return null;
             }
 
-            NonNullList<Ingredient> ingredients = apply(player, shaped.getIngredients(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
+            NonNullList<Ingredient> ingredients = apply(player, view, shaped.getIngredients(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
             if (ingredients == null) {
                 return null;
             } else if (ingredients == EMPTY_LIST) {
                 if (!result.edited()) {
-                    return recipe;
+                    return DUMMY_OBJECT;
                 }
                 ingredients = shaped.getIngredients();
             }
 
-            return new ShapedRecipe(shaped.getId(), shaped.getGroup(), shaped.category(), shaped.getWidth(), shaped.getHeight(), ingredients, result.item(), shaped.showNotification());
+            return new ShapedRecipe(shaped.getGroup(), shaped.category(), new ShapedRecipePattern(shaped.getWidth(), shaped.getHeight(), ingredients, Optional.empty()), result.item(), shaped.showNotification());
         } else if (recipe instanceof ShapelessRecipe shapeless) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), ItemView.RECIPE, ItemSlot.Recipe.SHAPELESS_RESULT);
+            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.SHAPELESS_RESULT);
             if (result.item() == null) {
                 return null;
             }
 
-            NonNullList<Ingredient> ingredients = apply(player, shapeless.getIngredients(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
+            NonNullList<Ingredient> ingredients = apply(player, view, shapeless.getIngredients(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
             if (ingredients == null) {
                 return null;
             } else if (ingredients == EMPTY_LIST) {
                 if (!result.edited()) {
-                    return recipe;
+                    return DUMMY_OBJECT;
                 }
                 ingredients = shapeless.getIngredients();
             }
 
-            return new ShapelessRecipe(shapeless.getId(), shapeless.getGroup(), shapeless.category(), result.item(), ingredients);
+            return new ShapelessRecipe(shapeless.getGroup(), shapeless.category(), result.item(), ingredients);
         } else if (recipe instanceof SmithingTransformRecipe transform) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), ItemView.RECIPE, ItemSlot.Recipe.TRANSFORM_RESULT);
+            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.TRANSFORM_RESULT);
             if (result.item() == null) {
                 return null;
             }
 
             final Ingredient[] ingredients = apply(
-                    () -> apply(player, transform, TRANSFORM_TEMPLATE, ItemSlot.Recipe.TRANSFORM_TEMPLATE),
-                    () -> apply(player, transform, TRANSFORM_BASE, ItemSlot.Recipe.TRANSFORM_BASE),
-                    () -> apply(player, transform, TRANSFORM_ADDITION, ItemSlot.Recipe.TRANSFORM_ADDITION)
+                    () -> apply(player, view, transform, TRANSFORM_TEMPLATE, ItemSlot.Recipe.TRANSFORM_TEMPLATE),
+                    () -> apply(player, view, transform, TRANSFORM_BASE, ItemSlot.Recipe.TRANSFORM_BASE),
+                    () -> apply(player, view, transform, TRANSFORM_ADDITION, ItemSlot.Recipe.TRANSFORM_ADDITION)
             );
             if (ingredients == null) {
                 return null;
             } else if (ingredients.length == 0) {
-                return recipe;
+                return DUMMY_OBJECT;
             }
 
-            return new SmithingTransformRecipe(transform.getId(), ingredients[0], ingredients[1], ingredients[2], result.item());
+            return new SmithingTransformRecipe(ingredients[0], ingredients[1], ingredients[2], result.item());
         } else if (recipe instanceof SmithingTrimRecipe trim) {
             final Ingredient[] ingredients = apply(
-                    () -> apply(player, trim, TRIM_TEMPLATE, ItemSlot.Recipe.TRIM_TEMPLATE),
-                    () -> apply(player, trim, TRIM_BASE, ItemSlot.Recipe.TRIM_BASE),
-                    () -> apply(player, trim, TRIM_ADDITION, ItemSlot.Recipe.TRIM_ADDITION)
+                    () -> apply(player, view, trim, TRIM_TEMPLATE, ItemSlot.Recipe.TRIM_TEMPLATE),
+                    () -> apply(player, view, trim, TRIM_BASE, ItemSlot.Recipe.TRIM_BASE),
+                    () -> apply(player, view, trim, TRIM_ADDITION, ItemSlot.Recipe.TRIM_ADDITION)
             );
             if (ingredients == null) {
                 return null;
             } else if (ingredients.length == 0) {
-                return recipe;
+                return DUMMY_OBJECT;
             }
 
-            return new SmithingTrimRecipe(trim.getId(), ingredients[0], ingredients[1], ingredients[2]);
+            return new SmithingTrimRecipe(ingredients[0], ingredients[1], ingredients[2]);
         } else if (recipe instanceof StonecutterRecipe stonecutter) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), ItemView.RECIPE, ItemSlot.Recipe.STONECUTTER_RESULT);
+            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.STONECUTTER_RESULT);
             if (result.item() == null) {
                 return null;
             }
@@ -244,30 +252,30 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
                 throw new RuntimeException(t);
             }
 
-            Ingredient applied = apply(player, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+            Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
             if (applied == null) {
                 return null;
             } else if (applied == Ingredient.EMPTY) {
                 if (!result.edited()) {
-                    return recipe;
+                    return DUMMY_OBJECT;
                 }
                 applied = ingredient;
             }
 
-            return new StonecutterRecipe(stonecutter.getId(), stonecutter.getGroup(), applied, result.item());
+            return new StonecutterRecipe(stonecutter.getGroup(), applied, result.item());
         }
-        return recipe;
+        return DUMMY_OBJECT;
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    protected NonNullList<Ingredient> apply(@NotNull PlayerT player, @NotNull NonNullList<Ingredient> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
+    protected NonNullList<Ingredient> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull NonNullList<Ingredient> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
         final NonNullList<Ingredient> list = NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
         int empty = 0;
         boolean edited = false;
         for (int i = 0; i < ingredients.size(); i++) {
             final Ingredient ingredient = ingredients.get(i);
-            final Ingredient result = apply(player, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
+            final Ingredient result = apply(player, view, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
             if (result == Ingredient.EMPTY) {
                 list.add(ingredient);
                 continue;
@@ -306,16 +314,16 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
     }
 
     @Nullable
-    protected Ingredient apply(@NotNull PlayerT player, @NotNull SmithingRecipe recipe, @NotNull MethodHandle field, @NotNull ItemSlot slot) {
+    protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull SmithingRecipe recipe, @NotNull MethodHandle field, @NotNull ItemSlot slot) {
         try {
-            return apply(player, (Ingredient) field.invoke(recipe), slot);
+            return apply(player, view, (Ingredient) field.invoke(recipe), slot);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
     }
 
     @Nullable
-    protected Ingredient apply(@NotNull PlayerT player, @NotNull Ingredient ingredient, @NotNull Object slot) {
+    protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Ingredient ingredient, @NotNull Object slot) {
         if (ingredient == Ingredient.EMPTY) {
             return Ingredient.EMPTY;
         }
@@ -325,7 +333,7 @@ public class RecipesRewriter<PlayerT> implements PacketRewriter<PlayerT, Clientb
             if (item == null) {
                 return null;
             }
-            final var result = this.mapper.apply(player, item, ItemView.RECIPE, slot);
+            final var result = this.mapper.apply(player, item, view, slot);
             items.add(new Ingredient.ItemValue(result.item()));
             if (result.edited()) {
                 edited = true;
