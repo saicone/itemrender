@@ -29,7 +29,11 @@ public enum ItemView {
     /**
      * Is the view when an item is rendered as entity (eye of ender, fireball, rocket... etc.), on block entity (like item frame) or armor stand.
      */
-    METADATA;
+    METADATA,
+    /**
+     * Is the view when an item is on text component sent through chat.
+     */
+    CHAT;
 
     public static final ItemView[] CLIENTBOUND = new ItemView[] { WINDOW, RECIPE, MERCHANT, EQUIPMENT, METADATA };
     public static final ItemView[] SERVERBOUND = new ItemView[] { WINDOW_SERVER };

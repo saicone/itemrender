@@ -9,6 +9,7 @@ import com.saicone.item.render.rewriter.CreativeModeSlotRewriter;
 import com.saicone.item.render.rewriter.MerchantOffersRewriter;
 import com.saicone.item.render.rewriter.SetEntityDataRewriter;
 import com.saicone.item.render.rewriter.SetEquipmentRewriter;
+import com.saicone.item.render.rewriter.SystemChatRewriter;
 import com.saicone.item.render.rewriter.UpdateRecipesRewriter;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -22,6 +23,7 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -52,6 +54,7 @@ public class PaperItemRender extends PacketItemRender<Player, ItemStack, Packet<
         register(ClientboundMerchantOffersPacket.class, MerchantOffersRewriter::new);
         register(ClientboundSetEntityDataPacket.class, SetEntityDataRewriter::new);
         register(ClientboundSetEquipmentPacket.class, SetEquipmentRewriter::new);
+        register(ClientboundSystemChatPacket.class, SystemChatRewriter::new);
         register(ClientboundUpdateRecipesPacket.class, UpdateRecipesRewriter::new);
     }
 
