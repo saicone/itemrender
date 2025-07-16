@@ -5,13 +5,16 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, ClientboundMerchantOffersPacket> {
@@ -39,16 +42,18 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
                 if (items.length == 0) {
                     offers.add(offer);
                 } else {
+                    final ItemStack itemA = items[0];
                     offers.add(new MerchantOffer(
-                            items[0],
-                            items[1],
+                            new ItemCost(itemA.getItem().asItem().builtInRegistryHolder(), itemA.getCount(), DataComponentPredicate.allOf(itemA.getComponents()), itemA),
+                            Optional.ofNullable(items[1]).map(item -> new ItemCost(item.getItem().asItem().builtInRegistryHolder(), item.getCount(), DataComponentPredicate.allOf(item.getComponents()), item)),
                             items[2],
                             offer.getUses(),
                             offer.getMaxUses(),
                             offer.getXp(),
                             offer.getPriceMultiplier(),
                             offer.getDemand(),
-                            offer.ignoreDiscounts
+                            offer.ignoreDiscounts,
+                            null
                     ));
                     edited = true;
                 }

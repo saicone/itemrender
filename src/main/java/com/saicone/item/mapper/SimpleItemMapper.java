@@ -118,10 +118,23 @@ public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, Ite
     }
 
     @Override
+    public boolean allow(@NotNull ItemView view) {
+        return views.contains(view);
+    }
+
+    @Override
     public void apply(@NotNull ItemHolder<PlayerT, ItemT> holder) {
         if (isValidItem(holder) && isValidSlot(holder.slot())) {
             holder.item(function.apply(holder.player(), holder.item()));
         }
+    }
+
+    @Override
+    public @NotNull ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
+        final ItemHolder<PlayerT, ItemT> holder = new ItemHolder<>();
+        holder.reset(player, item, view, slot);
+        apply(holder);
+        return holder;
     }
 
     public boolean isValidItem(@NotNull ItemHolder<PlayerT, ItemT> holder) {

@@ -1,19 +1,66 @@
 plugins {
-    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.14' apply false
-    id 'com.gradleup.shadow'
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.18' apply false
 }
 
 allprojects {
+    apply plugin: 'com.gradleup.shadow'
+
     repositories {
         maven { url 'https://repo.papermc.io/repository/maven-public/' }
     }
+
+    jar {
+        enabled = false
+        dependsOn (shadowJar)
+    }
+
+    shadowJar {
+        archiveClassifier.set('')
+    }
 }
+
+def modules = [
+        'paper-1.20.1': [ depends: null, package: '.v1_20_R1', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.2': [ depends: ':paper:paper-1.20.1', package: '.v1_20_R2', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.4': [ depends: ':paper:paper-1.20.1', package: '.v1_20_R3', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.6': [ depends: ':paper:paper-1.20.4' ]
+]
 
 subprojects {
     apply plugin: 'io.papermc.paperweight.userdev'
 
+    def module = modules[project.name]
+
+    if (module.depends != null) {
+        dependencies {
+            implementation project(module.depends.toString())
+        }
+    }
+
+    if (module.java != null) {
+        java {
+            sourceCompatibility = module.java
+            targetCompatibility = module.java
+        }
+    }
+
     assemble {
         dependsOn(reobfJar)
+    }
+
+    jar {
+        dependsOn(reobfJar)
+    }
+
+    def toPackage = 'org.bukkit.craftbukkit' + (module.package ?: '')
+    shadowJar {
+        for (final def entry in modules.entrySet()) {
+            if (entry.key == project.name || entry.value.package == null) {
+                break
+            }
+            def fromPackage = 'org.bukkit.craftbukkit' + entry.value.package
+            relocate fromPackage, toPackage
+        }
     }
 
     publishing {
@@ -22,7 +69,14 @@ subprojects {
                 groupId project.group
                 artifactId project.name
                 version project.version
-                from components.java
+                from components.shadow
+            }
+
+            reobf(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version project.version
+                from components.shadow
 
                 artifact(reobfJar.outputJar) {
                     classifier 'reobf'
@@ -44,24 +98,13 @@ java {
     withJavadocJar()
 }
 
-jar {
-    enabled = false
-    dependsOn (shadowJar)
-}
-
-shadowJar {
-    archiveClassifier.set('')
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
             groupId project.group
             artifactId project.name
             version project.version
-            from components.java
-
-            artifact shadowJar
+            from components.shadow
         }
     }
 }
