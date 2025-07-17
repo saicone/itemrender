@@ -41,7 +41,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-// Same as 1.20.1
+// Same on 1.20.1
 public class PaperItemRender extends PacketItemRender<Player, ItemStack, Packet<?>> implements Listener {
 
     private final Plugin plugin;

@@ -29,9 +29,9 @@ public class SystemChatRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemSta
         }
 
         final Component component;
-        if (packet.adventure$content() != null) {
+        if (packet.adventure$content() != null) { // Adventure
             component = rewrite(this.mapper, player, view, PaperAdventure.asVanilla(packet.adventure$content()));
-        } else if (packet.content() != null) {
+        } else if (packet.content() != null) { // Vanilla
             final Component fromJson = Component.Serializer.fromJson(packet.content());
             if (fromJson == null) {
                 return packet;
