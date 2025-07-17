@@ -4,6 +4,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.util.FieldLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.world.item.ItemStack;
@@ -26,8 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -36,76 +35,17 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
     private final NonNullList<?> EMPTY_LIST = NonNullList.create();
 
-    private static final MethodHandle COOKING_INGREDIENT;
+    private static final MethodHandle COOKING_INGREDIENT = FieldLookup.getter(AbstractCookingRecipe.class, Ingredient.class, "ingredient", "d");
 
-    private static final MethodHandle SINGLE_INGREDIENT;
+    private static final MethodHandle SINGLE_INGREDIENT = FieldLookup.getter(SingleItemRecipe.class, Ingredient.class, "ingredient", "a");
 
-    private static final MethodHandle TRANSFORM_TEMPLATE;
-    private static final MethodHandle TRANSFORM_BASE;
-    private static final MethodHandle TRANSFORM_ADDITION;
+    private static final MethodHandle TRANSFORM_TEMPLATE = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "template", "b");
+    private static final MethodHandle TRANSFORM_BASE = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "base", "c");
+    private static final MethodHandle TRANSFORM_ADDITION = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "addition", "d");
 
-    private static final MethodHandle TRIM_TEMPLATE;
-    private static final MethodHandle TRIM_BASE;
-    private static final MethodHandle TRIM_ADDITION;
-
-    static {
-        MethodHandle cooking$ingredient = null;
-
-        MethodHandle single$ingredient = null;
-
-        MethodHandle transform$template = null;
-        MethodHandle transform$base = null;
-        MethodHandle transform$addition = null;
-
-        MethodHandle trim$template = null;
-        MethodHandle trim$base = null;
-        MethodHandle trim$addition = null;
-        try {
-            final MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-            final Field AbstractCookingRecipe$ingredient = AbstractCookingRecipe.class.getDeclaredField("d");
-            AbstractCookingRecipe$ingredient.setAccessible(true);
-            cooking$ingredient = lookup.unreflectGetter(AbstractCookingRecipe$ingredient);
-
-            final Field SingleItemRecipe$ingredient = SingleItemRecipe.class.getDeclaredField("a");
-            SingleItemRecipe$ingredient.setAccessible(true);
-            single$ingredient = lookup.unreflectGetter(SingleItemRecipe$ingredient);
-
-            final Field SmithingTransformRecipe$template = SmithingTransformRecipe.class.getDeclaredField("b");
-            SmithingTransformRecipe$template.setAccessible(true);
-            transform$template = lookup.unreflectGetter(SmithingTransformRecipe$template);
-            final Field SmithingTransformRecipe$base = SmithingTransformRecipe.class.getDeclaredField("c");
-            SmithingTransformRecipe$base.setAccessible(true);
-            transform$base = lookup.unreflectGetter(SmithingTransformRecipe$base);
-            final Field SmithingTransformRecipe$addition = SmithingTransformRecipe.class.getDeclaredField("d");
-            SmithingTransformRecipe$addition.setAccessible(true);
-            transform$addition = lookup.unreflectGetter(SmithingTransformRecipe$addition);
-
-            final Field SmithingTrimRecipe$template = SmithingTrimRecipe.class.getDeclaredField("b");
-            SmithingTrimRecipe$template.setAccessible(true);
-            trim$template = lookup.unreflectGetter(SmithingTrimRecipe$template);
-            final Field SmithingTrimRecipe$base = SmithingTrimRecipe.class.getDeclaredField("c");
-            SmithingTrimRecipe$base.setAccessible(true);
-            trim$base = lookup.unreflectGetter(SmithingTrimRecipe$base);
-            final Field SmithingTrimRecipe$addition = SmithingTrimRecipe.class.getDeclaredField("d");
-            SmithingTrimRecipe$addition.setAccessible(true);
-            trim$addition = lookup.unreflectGetter(SmithingTrimRecipe$addition);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-
-        COOKING_INGREDIENT = cooking$ingredient;
-
-        SINGLE_INGREDIENT = single$ingredient;
-
-        TRANSFORM_TEMPLATE = transform$template;
-        TRANSFORM_BASE = transform$base;
-        TRANSFORM_ADDITION = transform$addition;
-
-        TRIM_TEMPLATE = trim$template;
-        TRIM_BASE = trim$base;
-        TRIM_ADDITION = trim$addition;
-    }
+    private static final MethodHandle TRIM_TEMPLATE = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "b");
+    private static final MethodHandle TRIM_BASE = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "c");
+    private static final MethodHandle TRIM_ADDITION = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "d");
 
     public UpdateRecipesRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
         super(mapper);
