@@ -30,19 +30,24 @@ public class SystemChatRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemSta
             return packet;
         }
 
-        final Component component;
-        if (packet.adventure$message != null) { // Adventure
-            component = rewrite(this.mapper, player, view, PaperAdventure.asVanilla(packet.adventure$message));
-        } else if (packet.components != null) { // Bungeecord
-            final Component fromJson = Component.Serializer.fromJson(ComponentSerializer.toString(packet.components));
-            if (fromJson == null) {
+        Component component = null;
+        try {
+            if (packet.adventure$message != null) { // Adventure
+                component = rewrite(this.mapper, player, view, PaperAdventure.asVanilla(packet.adventure$message));
+            }
+        } catch (Throwable ignored) { }
+        if (component == null) {
+            if (packet.components != null) { // Bungeecord
+                final Component fromJson = Component.Serializer.fromJson(ComponentSerializer.toString(packet.components));
+                if (fromJson == null) {
+                    return packet;
+                }
+                component = rewrite(this.mapper, player, view, fromJson);
+            } else if (packet.getMessage() != null) { // Vanilla
+                component = rewrite(this.mapper, player, view, packet.getMessage());
+            } else {
                 return packet;
             }
-            component = rewrite(this.mapper, player, view, fromJson);
-        } else if (packet.getMessage() != null) { // Vanilla
-            component = rewrite(this.mapper, player, view, packet.getMessage());
-        } else {
-            return packet;
         }
 
         if (component != null) {
