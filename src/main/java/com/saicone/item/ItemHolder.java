@@ -31,6 +31,10 @@ public class ItemHolder<PlayerT, ItemT> {
         this.edited = false;
     }
 
+    public void update(@Nullable ItemT item) {
+        this.item = item;
+    }
+
     @NotNull
     public PlayerT player() {
         return player;

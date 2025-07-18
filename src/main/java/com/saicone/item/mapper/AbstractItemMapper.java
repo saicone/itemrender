@@ -98,9 +98,6 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
                 final WrappedItemMapper<PlayerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<PlayerT, Object, ItemT>) mapper;
                 wrappedMapper.wrapAndApply(holder);
             }
-            if (holder.item() == null) {
-                return;
-            }
         }
     }
 
