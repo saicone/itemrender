@@ -27,6 +27,9 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     @SuppressWarnings("unchecked")
     public @Nullable ClientboundSetEntityDataPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundSetEntityDataPacket packet) {
         final List<SynchedEntityData.DataItem<?>> packedItems = packet.getUnpackedData();
+        if (packedItems == null) {
+            return packet;
+        }
         for (int i = 0; i < packedItems.size(); i++) {
             final SynchedEntityData.DataItem<?> data = packedItems.get(i);
             if (data.getAccessor().getSerializer() == EntityDataSerializers.ITEM_STACK) {
@@ -35,7 +38,9 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
                     packedItems.remove(i);
                     i--;
                 } else if (result.edited()) {
-                    packedItems.set(i, new SynchedEntityData.DataItem(data.getAccessor(), result.item()));
+                    final SynchedEntityData.DataItem<?> newData = new SynchedEntityData.DataItem(data.getAccessor(), result.item());
+                    newData.setDirty(data.isDirty());
+                    packedItems.set(i, newData);
                 }
             }
         }
