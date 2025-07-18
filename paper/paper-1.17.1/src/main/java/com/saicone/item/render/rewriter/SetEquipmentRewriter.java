@@ -28,7 +28,7 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
         final List<Pair<EquipmentSlot, net.minecraft.world.item.ItemStack>> slots = packet.getSlots();
         for (int i = 0; i < slots.size(); i++) {
             final Pair<EquipmentSlot, net.minecraft.world.item.ItemStack> pair = slots.get(i);
-            final var result = this.mapper.apply(player, pair.getSecond(), view, pair.getFirst());
+            final var result = this.mapper.apply(player, pair.getSecond(), view, pair.getFirst().ordinal());
             if (result.item() == null) {
                 slots.remove(i);
                 i--;
