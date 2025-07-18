@@ -4,7 +4,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
-import com.saicone.item.util.FieldLookup;
+import com.saicone.item.util.Lookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.world.item.ItemStack;
@@ -38,17 +38,17 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
     private final NonNullList<?> EMPTY_LIST = NonNullList.create();
 
-    private static final MethodHandle COOKING_INGREDIENT = FieldLookup.getter(AbstractCookingRecipe.class, Ingredient.class, "ingredient", "d");
+    private static final MethodHandle COOKING_INGREDIENT = Lookup.getter(AbstractCookingRecipe.class, Ingredient.class, "ingredient", "d");
 
-    private static final MethodHandle SINGLE_INGREDIENT = FieldLookup.getter(SingleItemRecipe.class, Ingredient.class, "ingredient", "a");
+    private static final MethodHandle SINGLE_INGREDIENT = Lookup.getter(SingleItemRecipe.class, Ingredient.class, "ingredient", "a");
 
-    private static final MethodHandle TRANSFORM_TEMPLATE = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "template", "a");
-    private static final MethodHandle TRANSFORM_BASE = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "base", "b");
-    private static final MethodHandle TRANSFORM_ADDITION = FieldLookup.getter(SmithingTransformRecipe.class, Ingredient.class, "addition", "c");
+    private static final MethodHandle TRANSFORM_TEMPLATE = Lookup.getter(SmithingTransformRecipe.class, Ingredient.class, "template", "a");
+    private static final MethodHandle TRANSFORM_BASE = Lookup.getter(SmithingTransformRecipe.class, Ingredient.class, "base", "b");
+    private static final MethodHandle TRANSFORM_ADDITION = Lookup.getter(SmithingTransformRecipe.class, Ingredient.class, "addition", "c");
 
-    private static final MethodHandle TRIM_TEMPLATE = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "a");
-    private static final MethodHandle TRIM_BASE = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "b");
-    private static final MethodHandle TRIM_ADDITION = FieldLookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "c");
+    private static final MethodHandle TRIM_TEMPLATE = Lookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "a");
+    private static final MethodHandle TRIM_BASE = Lookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "b");
+    private static final MethodHandle TRIM_ADDITION = Lookup.getter(SmithingTrimRecipe.class, Ingredient.class, "ingredient", "c");
 
     public UpdateRecipesRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
         super(mapper);
@@ -88,12 +88,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
                     return null;
                 }
 
-                final Ingredient ingredient;
-                try {
-                    ingredient = (Ingredient) COOKING_INGREDIENT.invoke(cooking);
-                } catch (Throwable t) {
-                    throw new RuntimeException(t);
-                }
+                final Ingredient ingredient = Lookup.invoke(COOKING_INGREDIENT, cooking);
 
                 Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
                 if (applied == null) {
@@ -165,9 +160,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
                 }
 
                 final Ingredient[] ingredients = apply(
-                        () -> apply(player, view, transform, TRANSFORM_TEMPLATE, ItemSlot.Recipe.TRANSFORM_TEMPLATE),
-                        () -> apply(player, view, transform, TRANSFORM_BASE, ItemSlot.Recipe.TRANSFORM_BASE),
-                        () -> apply(player, view, transform, TRANSFORM_ADDITION, ItemSlot.Recipe.TRANSFORM_ADDITION)
+                        () -> apply(player, view, Lookup.invoke(TRANSFORM_TEMPLATE, transform), ItemSlot.Recipe.TRANSFORM_TEMPLATE),
+                        () -> apply(player, view, Lookup.invoke(TRANSFORM_BASE, transform), ItemSlot.Recipe.TRANSFORM_BASE),
+                        () -> apply(player, view, Lookup.invoke(TRANSFORM_ADDITION, transform), ItemSlot.Recipe.TRANSFORM_ADDITION)
                 );
                 if (ingredients == null) {
                     return null;
@@ -179,9 +174,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             }
             case SmithingTrimRecipe trim -> {
                 final Ingredient[] ingredients = apply(
-                        () -> apply(player, view, trim, TRIM_TEMPLATE, ItemSlot.Recipe.TRIM_TEMPLATE),
-                        () -> apply(player, view, trim, TRIM_BASE, ItemSlot.Recipe.TRIM_BASE),
-                        () -> apply(player, view, trim, TRIM_ADDITION, ItemSlot.Recipe.TRIM_ADDITION)
+                        () -> apply(player, view, Lookup.invoke(TRIM_TEMPLATE, trim), ItemSlot.Recipe.TRIM_TEMPLATE),
+                        () -> apply(player, view, Lookup.invoke(TRIM_BASE, trim), ItemSlot.Recipe.TRIM_BASE),
+                        () -> apply(player, view, Lookup.invoke(TRIM_ADDITION, trim), ItemSlot.Recipe.TRIM_ADDITION)
                 );
                 if (ingredients == null) {
                     return null;
@@ -197,12 +192,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
                     return null;
                 }
 
-                final Ingredient ingredient;
-                try {
-                    ingredient = (Ingredient) SINGLE_INGREDIENT.invoke(stonecutter);
-                } catch (Throwable t) {
-                    throw new RuntimeException(t);
-                }
+                final Ingredient ingredient = Lookup.invoke(SINGLE_INGREDIENT, stonecutter);
 
                 Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
                 if (applied == null) {
@@ -266,15 +256,6 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             }
         }
         return edited ? array : new Ingredient[0];
-    }
-
-    @Nullable
-    protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull SmithingRecipe recipe, @NotNull MethodHandle field, @NotNull ItemSlot slot) {
-        try {
-            return apply(player, view, (Ingredient) field.invoke(recipe), slot);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
     }
 
     @Nullable

@@ -9,9 +9,18 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class FieldLookup {
+public class Lookup {
 
-    FieldLookup() {
+    Lookup() {
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @NotNull Object... args) {
+        try {
+            return (T) handle.invoke(args);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     private static boolean matches(@NotNull Class<?> type, @Nullable Object object) {
@@ -39,7 +48,7 @@ public class FieldLookup {
     }
 
     @NotNull
-    public static Optional<Field> find(@NotNull Class<?> clazz, @Nullable Object type, @NotNull String... aliases) {
+    public static Optional<Field> field(@NotNull Class<?> clazz, @Nullable Object type, @NotNull String... aliases) {
         for (@NotNull String alias : aliases) {
             try {
                 final Field field = clazz.getDeclaredField(alias);
@@ -60,7 +69,7 @@ public class FieldLookup {
 
     @NotNull
     public static MethodHandle getter(@NotNull Class<?> clazz, @Nullable Object type, @NotNull String... aliases) {
-        return find(clazz, type, aliases).map(field -> {
+        return field(clazz, type, aliases).map(field -> {
             try {
                 field.setAccessible(true);
                 return MethodHandles.lookup().unreflectGetter(field);
@@ -72,7 +81,7 @@ public class FieldLookup {
 
     @NotNull
     public static MethodHandle setter(@NotNull Class<?> clazz, @Nullable Object type, @NotNull String... aliases) {
-        return find(clazz, type, aliases).map(field -> {
+        return field(clazz, type, aliases).map(field -> {
             try {
                 field.setAccessible(true);
                 return MethodHandles.lookup().unreflectSetter(field);
