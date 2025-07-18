@@ -1,0 +1,68 @@
+package com.saicone.item.render.rewriter;
+
+import com.saicone.item.ItemView;
+import com.saicone.item.network.PacketItemMapper;
+import com.saicone.item.util.Lookup;
+import net.minecraft.server.v1_16_R3.ChatHoverable;
+import net.minecraft.server.v1_16_R3.IChatBaseComponent;
+import net.minecraft.server.v1_16_R3.IChatMutableComponent;
+import net.minecraft.server.v1_16_R3.Item;
+import net.minecraft.server.v1_16_R3.ItemStack;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.invoke.MethodHandle;
+import java.util.List;
+
+public interface ComponentRewriter<PlayerT> {
+
+    @Nullable
+    default IChatBaseComponent rewrite(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper, @NotNull PlayerT player, @NotNull ItemView view, @NotNull IChatBaseComponent component) {
+        boolean edited = false;
+        final IChatMutableComponent mutable = component instanceof IChatMutableComponent ? (IChatMutableComponent) component : component.mutableCopy();
+
+        final ChatHoverable event = mutable.getChatModifier().getHoverEvent();
+        if (event != null) {
+            final ChatHoverable.c info = event.a(ChatHoverable.EnumHoverAction.SHOW_ITEM);
+            if (info != null) {
+                final var result = mapper.apply(player, ItemStackInfo.getItemStack(info), view, null);
+                if (result.item() == null) {
+                    mutable.setChatModifier(mutable.getChatModifier().setChatHoverable(null));
+                    edited = true;
+                } else if (result.edited()) {
+                    mutable.setChatModifier(mutable.getChatModifier().setChatHoverable(new ChatHoverable(ChatHoverable.EnumHoverAction.SHOW_ITEM, new ChatHoverable.c(result.item()))));
+                    edited = true;
+                }
+            }
+        }
+
+        final List<IChatBaseComponent> siblings = mutable.getSiblings();
+        for (int i = 0; i < siblings.size(); i++) {
+            final IChatBaseComponent sibling = rewrite(mapper, player, view, siblings.get(i));
+            if (sibling != null) {
+                siblings.set(i, sibling);
+                edited = true;
+            }
+        }
+
+        return edited ? mutable : null;
+    }
+
+    final class ItemStackInfo {
+
+        private static final MethodHandle ITEM = Lookup.getter(ChatHoverable.c.class, Item.class, "a");
+        private static final MethodHandle COUNT = Lookup.getter(ChatHoverable.c.class, int.class, "b");
+        private static final MethodHandle TAG = Lookup.getter(ChatHoverable.c.class, NBTTagCompound.class, "c");
+
+        @NotNull
+        private static ItemStack getItemStack(@NotNull ChatHoverable.c info) {
+            final ItemStack item = new ItemStack(Lookup.invoke(ITEM, info), Lookup.invoke(COUNT, info));
+            final NBTTagCompound tag = Lookup.invoke(TAG, info);
+            if (tag != null) {
+                item.setTag(tag);
+            }
+            return item;
+        }
+    }
+}

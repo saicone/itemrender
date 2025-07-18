@@ -1,6 +1,9 @@
 rootProject.name = 'itemrender'
 
 include(
+        ':bukkit',
+        ':bukkit:bukkit-1.16.5',
+        ':bukkit:bukkit-1.16.5:stickynote',
         ':paper',
         ':paper:paper-1.17.1',
         ':paper:paper-1.18.1',

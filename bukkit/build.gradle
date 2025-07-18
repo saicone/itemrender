@@ -1,0 +1,78 @@
+allprojects {
+    apply plugin: 'com.gradleup.shadow'
+
+    repositories {
+        maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/central' }
+        maven { url 'https://repo.codemc.io/repository/nms/' }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    jar {
+        enabled = false
+        dependsOn (shadowJar)
+    }
+
+    shadowJar {
+        archiveClassifier.set('')
+    }
+
+    if (project.name != 'stickynote') {
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    groupId project.group
+                    artifactId project.name
+                    version project.version
+                    from components.shadow
+                }
+            }
+        }
+    }
+}
+
+def modules = [
+        'bukkit-1.16.5': [ depends: null, package: '.v1_16_R3' ]
+]
+
+subprojects {
+    def module = modules[project.name]
+
+    if (module == null) {
+        return
+    }
+
+    if (module.depends != null) {
+        dependencies {
+            api project(module.depends.toString())
+        }
+    }
+
+    def toPackage1 = 'org.bukkit.craftbukkit' + module.package
+    def toPackage2 = 'net.minecraft.server' + module.package
+    shadowJar {
+        for (final def entry in modules.entrySet()) {
+            if (entry.key == project.name) {
+                break
+            }
+            def fromPackage1 = 'org.bukkit.craftbukkit' + entry.value.package
+            def fromPackage2 = 'net.minecraft.server' + entry.value.package
+            relocate fromPackage1, toPackage1
+            relocate fromPackage2, toPackage2
+        }
+    }
+}
+
+dependencies {
+    implementation rootProject
+    compileOnly 'org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT'
+}
+
+java {
+    withJavadocJar()
+}
