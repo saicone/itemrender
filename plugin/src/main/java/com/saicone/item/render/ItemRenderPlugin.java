@@ -38,6 +38,11 @@ public class ItemRenderPlugin extends JavaPlugin {
         }
     }
 
+    @Override
+    public void onEnable() {
+        renderLoader.getItemRender().load();
+    }
+
     @NotNull
     public ItemRenderLoader renderLoader() {
         return renderLoader;

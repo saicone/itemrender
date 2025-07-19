@@ -127,7 +127,6 @@ public class ItemRenderLoader {
     public void load() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         final Class<? extends ItemRender> renderType = Class.forName(ITEM_RENDER, true, getClassLoader()).asSubclass(ItemRender.class);
         itemRender = (ItemRender<Player, Object>) renderType.getDeclaredConstructor(Plugin.class, boolean.class).newInstance(plugin, true);
-        itemRender.load();
     }
 
     @NotNull
