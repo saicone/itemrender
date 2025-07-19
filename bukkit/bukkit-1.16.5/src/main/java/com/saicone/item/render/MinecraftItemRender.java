@@ -119,18 +119,7 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
         final EntityPlayer serverPlayer = player.getHandle();
         final Channel channel = serverPlayer.playerConnection.networkManager.channel;
         final ChannelPipeline pipeline = channel.pipeline();
-        pipeline.addAfter("decoder", "item_render", new ChannelDuplexHandler() {
-            @Override
-            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-                if (msg instanceof Packet) {
-                    msg = rewrite(player, (Packet<?>) msg); // send
-                    if (msg == null) {
-                        return;
-                    }
-                }
-                super.write(ctx, msg, promise);
-            }
-
+        pipeline.addAfter("decoder", "item_render_decoder", new ChannelDuplexHandler() {
             @Override
             public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
                 if (msg instanceof Packet) {
@@ -140,6 +129,18 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
                     }
                 }
                 super.channelRead(ctx, msg);
+            }
+        });
+        pipeline.addAfter("encoder", "item_render_encoder", new ChannelDuplexHandler() {
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                if (msg instanceof Packet) {
+                    msg = rewrite(player, (Packet<?>) msg); // send
+                    if (msg == null) {
+                        return;
+                    }
+                }
+                super.write(ctx, msg, promise);
             }
         });
     }
