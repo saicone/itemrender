@@ -43,7 +43,11 @@ public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, Ite
     @NotNull
     @Contract("_ -> this")
     public SimpleItemMapper<PlayerT, ItemT> check(@NotNull BiPredicate<PlayerT, ItemT> predicate) {
-        this.predicate = predicate;
+        if (this.predicate == null) {
+            this.predicate = predicate;
+        } else {
+            this.predicate = this.predicate.and(predicate);
+        }
         return this;
     }
 

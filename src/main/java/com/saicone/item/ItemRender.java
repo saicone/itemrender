@@ -1,7 +1,7 @@
 package com.saicone.item;
 
 import com.saicone.item.mapper.AbstractItemMapper;
-import com.saicone.item.mapper.WrappedItemMapper;
+import com.saicone.item.render.WrappedItemRender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -9,14 +9,14 @@ import java.util.Map;
 
 public abstract class ItemRender<PlayerT, ItemT> extends AbstractItemMapper<PlayerT, ItemT> {
 
-    private final Map<Class<?>, WrappedItemMapper<PlayerT, ?, ItemT>> wrappedMappers = new HashMap<>();
+    private final Map<Class<?>, WrappedItemRender<PlayerT, ?, ItemT>> wrappedMappers = new HashMap<>();
 
     public abstract void load();
 
     @NotNull
     @SuppressWarnings("unchecked")
-    public <ItemA> WrappedItemMapper<PlayerT, ItemA, ItemT> using(@NotNull Class<ItemA> type) {
-        WrappedItemMapper<PlayerT, ItemA, ItemT> wrapped = (WrappedItemMapper<PlayerT, ItemA, ItemT>) wrappedMappers.get(type);
+    public <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> using(@NotNull Class<ItemA> type) {
+        WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = (WrappedItemRender<PlayerT, ItemA, ItemT>) wrappedMappers.get(type);
         if (wrapped == null) {
             wrapped = wrapped(type);
             wrappedMappers.put(type, wrapped);
@@ -25,8 +25,8 @@ public abstract class ItemRender<PlayerT, ItemT> extends AbstractItemMapper<Play
     }
 
     @NotNull
-    public <ItemA> WrappedItemMapper<PlayerT, ItemA, ItemT> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
-        final WrappedItemMapper<PlayerT, ItemA, ItemT> wrapped = new WrappedItemMapper<>() {
+    public <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
+        final WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = new WrappedItemRender<>() {
             @Override
             protected @NotNull AbstractItemMapper<PlayerT, ?> parent() {
                 return ItemRender.this;
@@ -51,5 +51,5 @@ public abstract class ItemRender<PlayerT, ItemT> extends AbstractItemMapper<Play
         return wrapped;
     }
 
-    protected abstract <ItemA> WrappedItemMapper<PlayerT, ItemA, ItemT> wrapped(@NotNull Class<ItemA> type);
+    protected abstract <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> wrapped(@NotNull Class<ItemA> type);
 }

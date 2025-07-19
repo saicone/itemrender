@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ItemRenderAPI {
 
-    private static Object ITEM_RENDER;
+    private static ItemRender<Player, Object> ITEM_RENDER;
 
     @NotNull
     public static ItemRender<Player, ItemStack> bukkit() {
@@ -14,14 +14,7 @@ public class ItemRenderAPI {
     }
 
     @NotNull
-    @SuppressWarnings("unchecked")
     public static ItemRender<Player, Object> minecraft() {
-        return (ItemRender<Player, Object>) ITEM_RENDER;
-    }
-
-    @NotNull
-    @SuppressWarnings("unchecked")
-    public static ItemRender<Player, net.minecraft.world.item.ItemStack> paper() {
-        return (ItemRender<Player, net.minecraft.world.item.ItemStack>) ITEM_RENDER;
+        return ITEM_RENDER;
     }
 }
