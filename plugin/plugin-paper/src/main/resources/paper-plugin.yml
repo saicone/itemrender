@@ -1,0 +1,7 @@
+name: itemrender
+version: ${version}
+main: com.saicone.item.render.ItemRenderPlugin
+description: Powerful easy-to-use API to modify how players see items
+api-version: 1.19
+bootstrapper: com.saicone.item.render.ItemRenderBootstrap
+loader: com.saicone.item.render.ItemRenderBootstrap

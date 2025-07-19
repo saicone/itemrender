@@ -1,0 +1,17 @@
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://oss.sonatype.org/content/repositories/central' }
+}
+
+dependencies {
+    implementation project(':bukkit')
+    compileOnly('org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT') {
+        exclude group: 'com.mojang'
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
