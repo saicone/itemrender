@@ -12,11 +12,33 @@ public interface ItemSlot {
     }
 
     @NotNull
+    static ItemSlot integer(int i) {
+        if (i <= Cache.HIGH && i >= Cache.LOW) {
+            return Cache.INTEGER[i - Cache.LOW];
+        }
+        return new Any<>(i);
+    }
+
+    @NotNull
     static <A, B> Pair<A, B> pair(@NotNull A anyA, @NotNull B anyB) {
         return new Pair<>(anyA, anyB);
     }
 
-    boolean isValid(Object object);
+    boolean matches(Object object);
+
+    class Cache {
+
+        private static final int HIGH = 1024;
+        private static final int LOW = -128;
+
+        private static final ItemSlot[] INTEGER = new ItemSlot[HIGH + Math.abs(LOW) + 1];
+
+        static {
+            for (int i = 0; i < INTEGER.length; i++) {
+                INTEGER[i] = new Any<>(i);
+            }
+        }
+    }
 
     class Any<T> implements ItemSlot {
 
@@ -27,11 +49,25 @@ public interface ItemSlot {
         }
 
         @Override
-        public boolean isValid(Object object) {
+        public boolean matches(Object object) {
             if (object instanceof Any<?>) {
                 return Objects.equals(this.any, ((Any<?>) object).any);
             }
             return any.equals(object);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (!(object instanceof Any)) return false;
+
+            Any<?> any1 = (Any<?>) object;
+            return any.equals(any1.any);
+        }
+
+        @Override
+        public int hashCode() {
+            return any.hashCode();
         }
     }
 
@@ -45,11 +81,28 @@ public interface ItemSlot {
         }
 
         @Override
-        public boolean isValid(Object object) {
+        public boolean matches(Object object) {
             if (object instanceof Pair<?,?>) {
                 return Objects.equals(this.any, ((Pair<?, ?>) object).any) || Objects.equals(this.anyB, ((Pair<?, ?>) object).anyB);
             }
-            return super.isValid(object);
+            return super.matches(object);
+        }
+
+        @Override
+        public final boolean equals(Object object) {
+            if (this == object) return true;
+            if (!(object instanceof Pair)) return false;
+            if (!super.equals(object)) return false;
+
+            Pair<?, ?> pair = (Pair<?, ?>) object;
+            return anyB.equals(pair.anyB);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + anyB.hashCode();
+            return result;
         }
     }
 
@@ -66,13 +119,18 @@ public interface ItemSlot {
         public static final Equipment[] ARMOR = new Equipment[] { FEET, LEGS, CHEST, HEAD };
 
         @Override
-        public boolean isValid(Object object) {
+        public boolean matches(Object object) {
             if (object instanceof Enum<?>) {
-                return ((Enum<?>) object).ordinal() == ordinal();
+                return ((Enum<?>) object).ordinal() == ordinal() || ((Enum<?>) object).name().replace('_', '\0').equalsIgnoreCase(name());
             } else if (object instanceof Number) {
                 return ((Number) object).intValue() == ordinal();
             }
             return false;
+        }
+
+        @NotNull
+        public static <E extends Enum<E>> Equipment of(@NotNull E e) {
+            return values()[e.ordinal()];
         }
     }
 

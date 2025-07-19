@@ -1,5 +1,6 @@
 package com.saicone.item.render.rewriter;
 
+import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
@@ -30,7 +31,7 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
         final List<ItemStack> items = Lookup.invoke(ITEMS, packet);
         int empty = 0;
         for (int slot = 0; slot < items.size(); slot++) {
-            final var result = this.mapper.apply(player, items.get(slot), view, slot);
+            final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
             if (result.item() == null) {
                 items.set(slot, ItemStack.b);
                 empty++;

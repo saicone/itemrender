@@ -1,6 +1,7 @@
 package com.saicone.item.render.rewriter;
 
 import com.mojang.datafixers.util.Pair;
+import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
@@ -32,7 +33,7 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
         final List<Pair<EnumItemSlot, ItemStack>> slots = Lookup.invoke(SLOTS, packet);
         for (int i = 0; i < slots.size(); i++) {
             final Pair<EnumItemSlot, ItemStack> pair = slots.get(i);
-            final var result = this.mapper.apply(player, pair.getSecond(), view, pair.getFirst().ordinal());
+            final var result = this.mapper.apply(player, pair.getSecond(), view, ItemSlot.Equipment.of(pair.getFirst()));
             if (result.item() == null) {
                 slots.remove(i);
                 i--;

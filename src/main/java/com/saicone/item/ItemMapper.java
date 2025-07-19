@@ -18,6 +18,6 @@ public interface ItemMapper<PlayerT, ItemT> {
     void apply(@NotNull ItemHolder<PlayerT, ItemT> holder);
 
     @NotNull
-    ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot);
+    ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot);
 
 }

@@ -1,7 +1,9 @@
 package com.saicone.item.mapper;
 
+import com.saicone.item.ItemFunction;
 import com.saicone.item.ItemHolder;
 import com.saicone.item.ItemMapper;
+import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.util.LabeledList;
 import com.saicone.item.util.LinkedLabeledList;
@@ -16,7 +18,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
 
@@ -102,19 +103,19 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
     }
 
     @Override
-    public @NotNull ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
+    public @NotNull ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot) {
         final ItemHolder<PlayerT, ItemT> holder = holder(player, item, view, slot);
         apply(holder);
         return holder;
     }
 
     @NotNull
-    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull Function<ItemT, ItemT> function) {
+    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull BiFunction<ItemT, ItemSlot, ItemT> function) {
         return simple(key, function);
     }
 
     @NotNull
-    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull BiFunction<PlayerT, ItemT, ItemT> function) {
+    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull ItemFunction<PlayerT, ItemT> function) {
         return simple(key, function);
     }
 
@@ -190,12 +191,12 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
     }
 
     @NotNull
-    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull Function<ItemT, ItemT> function) {
-        return simple(key, (player, item) -> function.apply(item));
+    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull BiFunction<ItemT, ItemSlot, ItemT> function) {
+        return simple(key, (player, item, slot) -> function.apply(item, slot));
     }
 
     @NotNull
-    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull BiFunction<PlayerT, ItemT, ItemT> function) {
+    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull ItemFunction<PlayerT, ItemT> function) {
         return new SimpleItemMapper<>(type(), function) {
             @Override
             protected @NotNull AbstractItemMapper<PlayerT, ItemT> parent() {
@@ -209,7 +210,7 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         };
     }
 
-    protected ItemHolder<PlayerT, ItemT> holder(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
+    protected ItemHolder<PlayerT, ItemT> holder(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot) {
         final ItemHolder<PlayerT, ItemT> holder = this.holder.get();
         holder.reset(player, item, view, slot);
         return holder;

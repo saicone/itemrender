@@ -31,16 +31,16 @@ ItemRender API offers easy-to-use methods to edit client-side items.
 ItemStack item = ...;
 
 // Edit only item
-ItemRenderAPI.register("myedit:id", item -> {
+ItemRenderAPI.bukkit().register("myedit:id", (item, slot) -> {
     // Edit the item...
 
     // If you want to hide the item at all, just return null
     return item;
 }).when(ItemView.INVENTORY) // Edit client-side inventory items
-  .check(item -> item != null && item.hasTag()); // Condition to apply an edit
+  .check(item -> item != null && item.hasItemMeta()); // Condition to apply an edit
 
 // Edit with player
-ItemRenderAPI.register("myedit:id", (player, item) -> {
+ItemRenderAPI.bukkit().register("myedit:id", (player, item, slot) -> {
     // Edit the item with player that are viewing it
     
     return item;

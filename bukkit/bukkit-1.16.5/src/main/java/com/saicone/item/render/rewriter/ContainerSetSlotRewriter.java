@@ -1,5 +1,6 @@
 package com.saicone.item.render.rewriter;
 
+import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
@@ -29,7 +30,7 @@ public class ContainerSetSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, I
     @Override
     public @Nullable PacketPlayOutSetSlot rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutSetSlot packet) {
         final int slot = Lookup.invoke(SLOT, packet);
-        final var result = this.mapper.apply(player, Lookup.invoke(ITEM, packet), view, slot);
+        final var result = this.mapper.apply(player, Lookup.invoke(ITEM, packet), view, ItemSlot.integer(slot));
         if (result.item() == null) {
             return null;
         } else if (result.edited()) {

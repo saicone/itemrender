@@ -9,12 +9,12 @@ public class ItemHolder<PlayerT, ItemT> {
     private PlayerT player;
     private ItemT item;
     private ItemView view;
-    private Object slot;
+    private ItemSlot slot;
 
     private transient boolean edited;
 
     @ApiStatus.Internal
-    public void reset(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable Object slot) {
+    public void reset(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot) {
         this.player = player;
         this.item = item;
         this.view = view;
@@ -50,7 +50,7 @@ public class ItemHolder<PlayerT, ItemT> {
     }
 
     @NotNull
-    public Object slot() {
+    public ItemSlot slot() {
         return slot;
     }
 
