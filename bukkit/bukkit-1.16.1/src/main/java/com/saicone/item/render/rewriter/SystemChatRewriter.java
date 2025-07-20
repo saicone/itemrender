@@ -5,11 +5,10 @@ import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
 import com.saicone.item.util.Lookup;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.server.v1_16_R3.ChatMessageType;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent;
-import net.minecraft.server.v1_16_R3.ItemStack;
-import notminecraft.PacketPlayOutChat;
-import notpaper.adventure.PaperAdventure;
+import net.minecraft.server.v1_16_R1.ChatMessageType;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R1.ItemStack;
+import net.minecraft.server.v1_16_R1.PacketPlayOutChat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,26 +36,19 @@ public class SystemChatRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemSta
             return packet;
         }
 
-        IChatBaseComponent component = null;
-        try {
-            if (packet.adventure$message != null) { // Adventure
-                component = rewrite(this.mapper, player, view, PaperAdventure.asVanilla(packet.adventure$message));
+        final IChatBaseComponent component;
+        if (packet.components != null) { // Bungeecord
+            final IChatBaseComponent fromJson = IChatBaseComponent.ChatSerializer.a(ComponentSerializer.toString(packet.components));
+            if (fromJson == null) {
+                return packet;
             }
-        } catch (Throwable ignored) { }
-        if (component == null) {
-            if (packet.components != null) { // Bungeecord
-                final IChatBaseComponent fromJson = IChatBaseComponent.ChatSerializer.a(ComponentSerializer.toString(packet.components));
-                if (fromJson == null) {
-                    return packet;
-                }
-                component = rewrite(this.mapper, player, view, fromJson);
-            } else { // Vanilla
-                final IChatBaseComponent message = Lookup.invoke(MESSAGE, packet);
-                if (message != null) {
-                    component = rewrite(this.mapper, player, view, message);
-                } else {
-                    return packet;
-                }
+            component = rewrite(this.mapper, player, view, fromJson);
+        } else { // Vanilla
+            final IChatBaseComponent message = Lookup.invoke(MESSAGE, packet);
+            if (message != null) {
+                component = rewrite(this.mapper, player, view, message);
+            } else {
+                return packet;
             }
         }
 

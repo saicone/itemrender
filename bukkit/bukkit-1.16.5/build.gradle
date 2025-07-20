@@ -2,3 +2,8 @@ dependencies {
     compileOnly project(':bukkit:bukkit-1.16.5:stickynote')
     compileOnly 'org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT'
 }
+
+shadowJar {
+    relocate 'notminecraft', 'net.minecraft.server.v1_16_R3'
+    relocate 'notpaper', 'io.papermc.paper'
+}

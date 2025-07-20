@@ -37,7 +37,19 @@ allprojects {
 }
 
 def modules = [
-        'bukkit-1.16.5': [ depends: null, package: '.v1_16_R3' ]
+        'bukkit-1.8.8': [ depends: null, package: '.v1_8_R3' ],
+        'bukkit-1.9.2': [ depends: ':bukkit:bukkit-1.8.8', package: '.v1_9_R1' ],
+        'bukkit-1.9.4': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_9_R2' ],
+        'bukkit-1.10.2': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_10_R1' ],
+        'bukkit-1.11.2': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_11_R1' ],
+        'bukkit-1.12.2': [ depends: ':bukkit:bukkit-1.11.2', package: '.v1_12_R1' ],
+        'bukkit-1.13': [ depends: ':bukkit:bukkit-1.12.2', package: '.v1_13_R1' ],
+        'bukkit-1.13.2': [ depends: ':bukkit:bukkit-1.13', package: '.v1_13_R2' ],
+        'bukkit-1.14.4': [ depends: ':bukkit:bukkit-1.13', package: '.v1_14_R1' ],
+        'bukkit-1.15.2': [ depends: ':bukkit:bukkit-1.14.4', package: '.v1_15_R1' ],
+        'bukkit-1.16.1': [ depends: ':bukkit:bukkit-1.14.4', package: '.v1_16_R1' ],
+        'bukkit-1.16.3': [ depends: ':bukkit:bukkit-1.16.1', package: '.v1_16_R2' ],
+        'bukkit-1.16.5': [ depends: ':bukkit:bukkit-1.16.1', package: '.v1_16_R3' ]
 ]
 
 subprojects {

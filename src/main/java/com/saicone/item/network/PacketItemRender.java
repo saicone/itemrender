@@ -2,6 +2,7 @@ package com.saicone.item.network;
 
 import com.saicone.item.ItemRender;
 import com.saicone.item.ItemView;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,16 @@ public abstract class PacketItemRender<PlayerT, ItemT, PacketT> extends ItemRend
 
     public PacketItemRender(@NotNull Map<Class<? extends PacketT>, PacketRewriter<PlayerT, ItemT, ? extends PacketT>> rewriter) {
         this.rewriter = rewriter;
+    }
+
+    @ApiStatus.Internal
+    @SuppressWarnings("unchecked")
+    public void register(@NotNull Class<?> type, @NotNull Class<?> rewriter) {
+        try {
+            this.rewriter.put((Class<? extends PacketT>) type, (PacketRewriter<PlayerT, ItemT, ? extends PacketT>) rewriter.getDeclaredConstructor(PacketItemMapper.class).newInstance(this));
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     public <T extends PacketT> void register(@NotNull Class<T> type, @NotNull Function<PacketItemMapper<PlayerT, ItemT>, PacketRewriter<PlayerT, ItemT, T>> rewriter) {

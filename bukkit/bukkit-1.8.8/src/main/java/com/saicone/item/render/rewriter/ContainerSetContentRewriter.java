@@ -1,0 +1,46 @@
+package com.saicone.item.render.rewriter;
+
+import com.saicone.item.ItemSlot;
+import com.saicone.item.ItemView;
+import com.saicone.item.network.PacketItemMapper;
+import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.util.Lookup;
+import net.minecraft.server.v1_8_R3.ItemStack;
+import net.minecraft.server.v1_8_R3.PacketPlayOutWindowItems;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.invoke.MethodHandle;
+
+public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutWindowItems> {
+
+    private static final MethodHandle ITEMS = Lookup.getter(PacketPlayOutWindowItems.class, ItemStack[].class, "b");
+
+    public ContainerSetContentRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
+        super(mapper);
+    }
+
+    @Override
+    public @NotNull ItemView view(@NotNull PlayerT player) {
+        return this.mapper.creative(player) ? ItemView.WINDOW_CREATIVE : ItemView.WINDOW;
+    }
+
+    @Override
+    public @Nullable PacketPlayOutWindowItems rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutWindowItems packet) {
+        final ItemStack[] items = Lookup.invoke(ITEMS, packet);
+        int empty = 0;
+        for (int slot = 0; slot < items.length; slot++) {
+            final var result = this.mapper.apply(player, items[slot], view, ItemSlot.integer(slot));
+            if (result.item() == null) {
+                items[slot] = null;
+                empty++;
+            } else if (result.edited()) {
+                items[slot] = result.item();
+            }
+        }
+        if (empty == items.length) {
+            return null;
+        }
+        return packet;
+    }
+}

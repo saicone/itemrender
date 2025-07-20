@@ -28,13 +28,11 @@ Do you ever want to implement updatable items? This is the API are you looking f
 ItemRender API offers easy-to-use methods to edit client-side items.
 
 ```java
-ItemStack item = ...;
-
 // Edit only item
 ItemRenderAPI.bukkit().register("myedit:id", (item, slot) -> {
     // Edit the item...
 
-    // If you want to hide the item at all, just return null
+    // If you want to remove the item information at all, just return null
     return item;
 }).when(ItemView.INVENTORY) // Edit client-side inventory items
   .check(item -> item != null && item.hasItemMeta()); // Condition to apply an edit

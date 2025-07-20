@@ -2,8 +2,3 @@ dependencies {
     compileOnly 'org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT'
     compileOnlyApi 'net.kyori:adventure-api:4.9.3'
 }
-
-shadowJar {
-    relocate 'notminecraft', 'net.minecraft.server.v1_16_R3'
-    relocate 'notpaper', 'io.papermc.paper'
-}
