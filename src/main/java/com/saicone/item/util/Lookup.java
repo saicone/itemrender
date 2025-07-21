@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
@@ -45,6 +46,30 @@ public class Lookup {
         } else {
             return true;
         }
+    }
+
+    private static boolean matches(@NotNull Class<?>[] types, @NotNull Object[] objects) {
+        for (int i = 0; i < types.length; i++) {
+            if (!matches(types[i], objects[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @NotNull
+    public static MethodHandle constructor(@NotNull Class<?> clazz, @NotNull Object... parameters) {
+        for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+            if (constructor.getParameterCount() == parameters.length && matches(constructor.getParameterTypes(), parameters)) {
+                try {
+                    constructor.setAccessible(true);
+                    return MethodHandles.lookup().unreflectConstructor(constructor);
+                } catch (Throwable t) {
+                    throw new RuntimeException(t);
+                }
+            }
+        }
+        throw new AssertionError("Cannot find any constructor of " + Arrays.toString(parameters) + " inside " + clazz.getName());
     }
 
     @NotNull

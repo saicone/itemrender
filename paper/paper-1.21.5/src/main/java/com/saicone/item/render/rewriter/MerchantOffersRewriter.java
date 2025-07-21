@@ -5,7 +5,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
-import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.ItemCost;
@@ -44,8 +44,8 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
                 } else {
                     final ItemStack itemA = items[0];
                     offers.add(new MerchantOffer(
-                            new ItemCost(itemA.getItemHolder(), itemA.getCount(), DataComponentPredicate.allOf(itemA.getComponents()), itemA),
-                            Optional.ofNullable(items[1]).map(item -> new ItemCost(item.getItemHolder(), item.getCount(), DataComponentPredicate.allOf(item.getComponents()), item)),
+                            new ItemCost(itemA.getItemHolder(), itemA.getCount(), DataComponentExactPredicate.allOf(itemA.getComponents()), itemA),
+                            Optional.ofNullable(items[1]).map(item -> new ItemCost(item.getItemHolder(), item.getCount(), DataComponentExactPredicate.allOf(item.getComponents()), item)),
                             items[2],
                             offer.getUses(),
                             offer.getMaxUses(),

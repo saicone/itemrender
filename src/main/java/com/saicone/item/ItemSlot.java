@@ -135,9 +135,12 @@ public interface ItemSlot {
     }
 
     class Recipe {
+        public static final ItemSlot CRAFTING_STATION = any("crafting:station");
+
         public static final ItemSlot COOKING_INGREDIENT = any("cooking:ingredient");
+        public static final ItemSlot COOKING_FUEL = any("cooking:fueld");
         public static final ItemSlot COOKING_RESULT = any("cooking:result");
-        public static final ItemSlot[] COOKING = new ItemSlot[] { COOKING_INGREDIENT, COOKING_RESULT };
+        public static final ItemSlot[] COOKING = new ItemSlot[] { COOKING_INGREDIENT, COOKING_FUEL, COOKING_RESULT };
 
         public static final ItemSlot[] SHAPED_INGREDIENT = new ItemSlot[9];
         public static final ItemSlot SHAPED_RESULT = any("shaped:result");
