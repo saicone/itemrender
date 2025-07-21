@@ -34,7 +34,7 @@ ItemRenderAPI.bukkit().register("myedit:id", (item, slot) -> {
 
     // If you want to remove the item information at all, just return null
     return item;
-}).when(ItemView.INVENTORY) // Edit client-side inventory items
+}).when(ItemView.WINDOW, ItemView.MERCHANT) // Edit client-side inventory items
   .check(item -> item != null && item.hasItemMeta()); // Condition to apply an edit
 
 // Edit with player
@@ -42,6 +42,6 @@ ItemRenderAPI.bukkit().register("myedit:id", (player, item, slot) -> {
     // Edit the item with player that are viewing it
     
     return item;
-}).when(ItemView.THIRD_PERSON) // Edit client-side items that are rendered by other players
+}).when(ItemView.EQUIPMENT, ItemView.METADATA) // Edit client-side items that are rendered by other players
   .check((player, item) -> player.hasPermission("see.items.different")); // Condition to apply an edit, also compatible with player argument
 ```

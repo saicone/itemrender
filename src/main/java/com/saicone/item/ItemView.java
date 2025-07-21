@@ -35,11 +35,10 @@ public enum ItemView {
      */
     CHAT;
 
-    public static final ItemView[] CLIENTBOUND = new ItemView[] { WINDOW, RECIPE, MERCHANT, EQUIPMENT, METADATA };
+    public static final ItemView[] CLIENTBOUND = new ItemView[] { WINDOW, MERCHANT, EQUIPMENT, METADATA };
     public static final ItemView[] SERVERBOUND = new ItemView[] { WINDOW_SERVER };
-    public static final ItemView[] FIRST_PERSON = new ItemView[] { WINDOW, RECIPE, MERCHANT };
+    public static final ItemView[] FIRST_PERSON = new ItemView[] { WINDOW, MERCHANT };
     public static final ItemView[] THIRD_PERSON = new ItemView[] { EQUIPMENT, METADATA };
-    public static final ItemView[] INVENTORY = new ItemView[] { WINDOW, MERCHANT };
 
     public boolean isFirstPerson() {
         switch (this) {
