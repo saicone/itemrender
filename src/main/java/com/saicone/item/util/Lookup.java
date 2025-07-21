@@ -16,9 +16,99 @@ public class Lookup {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T invoke(@NotNull MethodHandle handle, @NotNull Object... args) {
+    public static <T> T invoke(@NotNull MethodHandle handle) {
         try {
-            return (T) handle.invoke(args);
+            return (T) handle.invoke();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1) {
+        try {
+            return (T) handle.invoke(arg1);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2) {
+        try {
+            return (T) handle.invoke(arg1, arg2);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8, @Nullable Object arg9) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8, @Nullable Object arg9, @Nullable Object arg10) {
+        try {
+            return (T) handle.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
