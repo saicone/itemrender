@@ -86,6 +86,11 @@ public class ItemRenderLoader {
     }
 
     public void init() throws IOException {
+        try {
+            Class.forName(ITEM_RENDER);
+            return;
+        } catch (ClassNotFoundException ignored) { }
+
         final String[] dependency = dependency().split(":");
 
         final StringBuilder path = new StringBuilder();
