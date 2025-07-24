@@ -22,7 +22,7 @@ public interface ComponentRewriter<PlayerT> {
         if (event != null && event.action() == HoverEvent.Action.SHOW_ITEM) {
             final HoverEvent.ShowItem showItem = (HoverEvent.ShowItem) event;
             final var result = mapper.apply(player, showItem.item(), view, null);
-            if (result.item() == null) {
+            if (result.empty()) {
                 mutable.setStyle(mutable.getStyle().withHoverEvent(null));
                 edited = true;
             } else if (result.edited()) {

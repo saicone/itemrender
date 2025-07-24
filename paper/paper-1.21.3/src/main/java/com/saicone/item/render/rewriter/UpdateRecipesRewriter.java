@@ -81,19 +81,18 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             final Set<Holder<Item>> items = new HashSet<>();
             for (Holder<Item> item : propertyItems) {
                 final var result = this.mapper.apply(player, new ItemStack(item), view, slot);
-                if (result.item() != null) {
-                    if (result.edited()) {
-                        items.add(result.item().getItemHolder());
-                        itemsEdited = true;
-                    } else {
-                        items.add(item);
-                    }
+                if (result.empty()) {
+                    items.add(ItemStack.EMPTY.getItemHolder());
+                    itemsEdited = true;
+                } else if (result.edited()) {
+                    items.add(result.item().getItemHolder());
+                    itemsEdited = true;
+                } else {
+                    items.add(item);
                 }
             }
 
-            if (items.isEmpty()) {
-                itemSets.remove(entry.getKey());
-            } else if (itemsEdited) {
+            if (itemsEdited) {
                 itemSets.put(entry.getKey(), Lookup.invoke(PROPERTY, items));
                 edited = true;
             }
@@ -113,25 +112,20 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         for (SelectableRecipe.SingleInputEntry<StonecutterRecipe> entry : recipes.entries()) {
             final SelectableRecipe<StonecutterRecipe> selectable = entry.recipe();
             final SlotDisplay display = rewrite(this.mapper, player, view, selectable.optionDisplay(), ItemSlot.Recipe.STONECUTTER_INGREDIENT);
-            if (display != null) {
-                if (display == SlotDisplay.Empty.INSTANCE) {
-                    stonecutterRecipes.add(entry);
-                } else {
-                    stonecutterRecipes.add(new SelectableRecipe.SingleInputEntry<>(entry.input(), new SelectableRecipe<>(display, selectable.recipe())));
-                    edited = true;
-                }
+            if (display == null) {
+                stonecutterRecipes.add(entry);
+            } else {
+                stonecutterRecipes.add(new SelectableRecipe.SingleInputEntry<>(entry.input(), new SelectableRecipe<>(display, selectable.recipe())));
+                edited = true;
             }
         }
 
         if (edited) {
-            if (stonecutterRecipes.isEmpty()) {
-                return SelectableRecipe.SingleInputSet.empty();
-            } else {
-                return new SelectableRecipe.SingleInputSet<>(stonecutterRecipes);
-            }
-        } else {
-            return null;
+            return new SelectableRecipe.SingleInputSet<>(stonecutterRecipes);
         }
+
+        stonecutterRecipes.clear();
+        return null;
     }
     
     @Nullable

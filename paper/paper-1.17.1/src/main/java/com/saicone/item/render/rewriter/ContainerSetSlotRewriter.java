@@ -23,10 +23,8 @@ public class ContainerSetSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, I
     @Override
     public @Nullable ClientboundContainerSetSlotPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundContainerSetSlotPacket packet) {
         final var result = this.mapper.apply(player, packet.getItem(), view, ItemSlot.integer(packet.getSlot()));
-        if (result.item() == null) {
-            return null;
-        } else if (result.edited()) {
-            return new ClientboundContainerSetSlotPacket(packet.getContainerId(), packet.getStateId(), packet.getSlot(), result.item());
+        if (result.edited()) {
+            return new ClientboundContainerSetSlotPacket(packet.getContainerId(), packet.getStateId(), packet.getSlot(), result.itemOrDefault(ItemStack.EMPTY));
         }
         return packet;
     }

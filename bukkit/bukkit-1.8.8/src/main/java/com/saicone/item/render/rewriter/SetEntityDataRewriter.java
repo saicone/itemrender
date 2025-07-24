@@ -3,6 +3,7 @@ package com.saicone.item.render.rewriter;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.render.registry.ItemRegistry;
 import com.saicone.item.util.Lookup;
 import net.minecraft.server.v1_8_R3.DataWatcher;
 import net.minecraft.server.v1_8_R3.ItemStack;
@@ -34,15 +35,11 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         if (packedItems == null) {
             return packet;
         }
-        for (int i = 0; i < packedItems.size(); i++) {
-            final DataWatcher.WatchableObject data = packedItems.get(i);
+        for (final DataWatcher.WatchableObject data : packedItems) {
             if (data.c() == ITEM_STACK) {
                 final var result = this.mapper.apply(player, (ItemStack) data.b(), view, null);
-                if (result.item() == null) {
-                    packedItems.remove(i);
-                    i--;
-                } else if (result.edited()) {
-                    data.a(result.item());
+                if (result.edited()) {
+                    data.a(result.itemOrDefault(ItemRegistry.empty()));
                 }
             }
         }

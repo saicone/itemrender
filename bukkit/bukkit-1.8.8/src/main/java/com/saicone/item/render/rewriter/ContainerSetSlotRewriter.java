@@ -4,6 +4,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.render.registry.ItemRegistry;
 import com.saicone.item.util.Lookup;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import net.minecraft.server.v1_8_R3.PacketPlayOutSetSlot;
@@ -31,10 +32,8 @@ public class ContainerSetSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, I
     public @Nullable PacketPlayOutSetSlot rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutSetSlot packet) {
         final int slot = Lookup.invoke(SLOT, packet);
         final var result = this.mapper.apply(player, Lookup.invoke(ITEM, packet), view, ItemSlot.integer(slot));
-        if (result.item() == null) {
-            return null;
-        } else if (result.edited()) {
-            Lookup.invoke(SET_ITEM, packet, result.item());
+        if (result.edited()) {
+            Lookup.invoke(SET_ITEM, packet, result.itemOrDefault(ItemRegistry.empty()));
         }
         return packet;
     }

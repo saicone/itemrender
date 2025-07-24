@@ -21,8 +21,6 @@ import java.util.List;
 
 public class PlaceGhostRecipeRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, ClientboundPlaceGhostRecipePacket> implements SlotDisplayRewriter<PlayerT> {
 
-    private static final List<SlotDisplay> EMPTY_LIST = List.of();
-
     public PlaceGhostRecipeRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
         super(mapper);
     }
@@ -43,158 +41,91 @@ public class PlaceGhostRecipeRewriter<PlayerT> extends PacketRewriter<PlayerT, I
         switch (recipe) {
             case FurnaceRecipeDisplay furnace -> {
                 final SlotDisplay ingredient = rewrite(this.mapper, player, view, furnace.ingredient(), ItemSlot.Recipe.COOKING_INGREDIENT);
-                if (ingredient == null) {
-                    return null;
-                }
-
                 final SlotDisplay fuel = rewrite(this.mapper, player, view, furnace.fuel(), ItemSlot.Recipe.COOKING_FUEL);
-                if (fuel == null) {
-                    return null;
-                }
-
                 final SlotDisplay result = rewrite(this.mapper, player, view, furnace.result(), ItemSlot.Recipe.COOKING_RESULT);
-                if (result == null) {
-                    return null;
-                }
-
                 final SlotDisplay craftingStation = rewrite(this.mapper, player, view, furnace.craftingStation(), ItemSlot.Recipe.CRAFTING_STATION);
-                if (craftingStation == null) {
-                    return null;
-                }
 
-                if (ingredient == SlotDisplay.Empty.INSTANCE && fuel == SlotDisplay.Empty.INSTANCE && result == SlotDisplay.Empty.INSTANCE && craftingStation == SlotDisplay.Empty.INSTANCE) {
-                    return recipe;
+                if (ingredient == null && fuel == null && result == null && craftingStation == null) {
+                    return null;
                 }
 
                 return new FurnaceRecipeDisplay(
-                        ingredient == SlotDisplay.Empty.INSTANCE ? furnace.ingredient() : ingredient,
-                        fuel == SlotDisplay.Empty.INSTANCE ? furnace.fuel() : fuel,
-                        result == SlotDisplay.Empty.INSTANCE ? furnace.result() : result,
-                        craftingStation == SlotDisplay.Empty.INSTANCE ? furnace.craftingStation() : craftingStation,
+                        ingredient == null ? furnace.ingredient() : ingredient,
+                        fuel == null ? furnace.fuel() : fuel,
+                        result == null ? furnace.result() : result,
+                        craftingStation == null ? furnace.craftingStation() : craftingStation,
                         furnace.duration(),
                         furnace.experience()
                 );
             }
             case ShapedCraftingRecipeDisplay shaped -> {
                 final List<SlotDisplay> ingredients = rewrite(player, view, shaped.ingredients(), ItemSlot.Recipe.SHAPED_INGREDIENT);
-                if (ingredients == null) {
-                    return null;
-                }
-
                 final SlotDisplay result = rewrite(this.mapper, player, view, shaped.result(), ItemSlot.Recipe.SHAPED_RESULT);
-                if (result == null) {
-                    return null;
-                }
-
                 final SlotDisplay craftingStation = rewrite(this.mapper, player, view, shaped.craftingStation(), ItemSlot.Recipe.CRAFTING_STATION);
-                if (craftingStation == null) {
-                    return null;
-                }
 
-                if (ingredients == EMPTY_LIST && result == SlotDisplay.Empty.INSTANCE && craftingStation == SlotDisplay.Empty.INSTANCE) {
-                    return recipe;
+                if (ingredients == null && result == null && craftingStation == null) {
+                    return null;
                 }
 
                 return new ShapedCraftingRecipeDisplay(
                         shaped.width(),
                         shaped.height(),
-                        ingredients == EMPTY_LIST ? shaped.ingredients() : ingredients,
-                        result == SlotDisplay.Empty.INSTANCE ? shaped.result() : result,
-                        craftingStation == SlotDisplay.Empty.INSTANCE ? shaped.craftingStation() : craftingStation
+                        ingredients == null ? shaped.ingredients() : ingredients,
+                        result == null ? shaped.result() : result,
+                        craftingStation == null ? shaped.craftingStation() : craftingStation
                 );
             }
             case ShapelessCraftingRecipeDisplay shapeless -> {
                 final List<SlotDisplay> ingredients = rewrite(player, view, shapeless.ingredients(), ItemSlot.Recipe.SHAPELESS_INGREDIENT);
-                if (ingredients == null) {
-                    return null;
-                }
-
                 final SlotDisplay result = rewrite(this.mapper, player, view, shapeless.result(), ItemSlot.Recipe.SHAPELESS_RESULT);
-                if (result == null) {
-                    return null;
-                }
-
                 final SlotDisplay craftingStation = rewrite(this.mapper, player, view, shapeless.craftingStation(), ItemSlot.Recipe.CRAFTING_STATION);
-                if (craftingStation == null) {
-                    return null;
-                }
 
-                if (ingredients == EMPTY_LIST && result == SlotDisplay.Empty.INSTANCE && craftingStation == SlotDisplay.Empty.INSTANCE) {
-                    return recipe;
+                if (ingredients == null && result == null && craftingStation == null) {
+                    return null;
                 }
 
                 return new ShapelessCraftingRecipeDisplay(
-                        ingredients == EMPTY_LIST ? shapeless.ingredients() : ingredients,
-                        result == SlotDisplay.Empty.INSTANCE ? shapeless.result() : result,
-                        craftingStation == SlotDisplay.Empty.INSTANCE ? shapeless.craftingStation() : craftingStation
+                        ingredients == null ? shapeless.ingredients() : ingredients,
+                        result == null ? shapeless.result() : result,
+                        craftingStation == null ? shapeless.craftingStation() : craftingStation
                 );
             }
             case SmithingRecipeDisplay smithing -> {
                 final SlotDisplay template = rewrite(this.mapper, player, view, smithing.template(), ItemSlot.Recipe.TRANSFORM_TEMPLATE);
-                if (template == null) {
-                    return null;
-                }
-
                 final SlotDisplay base = rewrite(this.mapper, player, view, smithing.base(), ItemSlot.Recipe.TRANSFORM_BASE);
-                if (base == null) {
-                    return null;
-                }
-
                 final SlotDisplay addition = rewrite(this.mapper, player, view, smithing.addition(), ItemSlot.Recipe.TRANSFORM_ADDITION);
-                if (addition == null) {
-                    return null;
-                }
-
                 final SlotDisplay result = rewrite(this.mapper, player, view, smithing.result(), ItemSlot.Recipe.TRANSFORM_RESULT);
-                if (result == null) {
-                    return null;
-                }
-
                 final SlotDisplay craftingStation = rewrite(this.mapper, player, view, smithing.craftingStation(), ItemSlot.Recipe.CRAFTING_STATION);
-                if (craftingStation == null) {
-                    return null;
-                }
 
-                if (template == SlotDisplay.Empty.INSTANCE && base == SlotDisplay.Empty.INSTANCE && addition == SlotDisplay.Empty.INSTANCE && result == SlotDisplay.Empty.INSTANCE && craftingStation == SlotDisplay.Empty.INSTANCE) {
+                if (template == null && base == null && addition == null && result == null && craftingStation == null) {
                     return recipe;
                 }
 
                 return new SmithingRecipeDisplay(
-                        template == SlotDisplay.Empty.INSTANCE ? smithing.template() : template,
-                        base == SlotDisplay.Empty.INSTANCE ? smithing.base() : base,
-                        addition == SlotDisplay.Empty.INSTANCE ? smithing.addition() : addition,
-                        result == SlotDisplay.Empty.INSTANCE ? smithing.result() : result,
-                        craftingStation == SlotDisplay.Empty.INSTANCE ? smithing.craftingStation() : craftingStation
+                        template == null ? smithing.template() : template,
+                        base == null ? smithing.base() : base,
+                        addition == null ? smithing.addition() : addition,
+                        result == null ? smithing.result() : result,
+                        craftingStation == null ? smithing.craftingStation() : craftingStation
                 );
             }
             case StonecutterRecipeDisplay stonecutter -> {
                 final SlotDisplay input = rewrite(this.mapper, player, view, stonecutter.input(), ItemSlot.Recipe.STONECUTTER_INGREDIENT);
-                if (input == null) {
-                    return null;
-                }
-
                 final SlotDisplay result = rewrite(this.mapper, player, view, stonecutter.result(), ItemSlot.Recipe.STONECUTTER_RESULT);
-                if (result == null) {
-                    return null;
-                }
-
                 final SlotDisplay craftingStation = rewrite(this.mapper, player, view, stonecutter.craftingStation(), ItemSlot.Recipe.CRAFTING_STATION);
-                if (craftingStation == null) {
-                    return null;
-                }
 
-                if (input == SlotDisplay.Empty.INSTANCE && result == SlotDisplay.Empty.INSTANCE && craftingStation == SlotDisplay.Empty.INSTANCE) {
+                if (input == null && result == null && craftingStation == null) {
                     return recipe;
                 }
 
                 return new StonecutterRecipeDisplay(
-                        input == SlotDisplay.Empty.INSTANCE ? stonecutter.input() : input,
-                        result == SlotDisplay.Empty.INSTANCE ? stonecutter.result() : result,
-                        craftingStation == SlotDisplay.Empty.INSTANCE ? stonecutter.craftingStation() : craftingStation
+                        input == null ? stonecutter.input() : input,
+                        result == null ? stonecutter.result() : result,
+                        craftingStation == null ? stonecutter.craftingStation() : craftingStation
                 );
             }
             default -> {
-                return recipe;
+                return null;
             }
         }
     }
@@ -207,8 +138,6 @@ public class PlaceGhostRecipeRewriter<PlayerT> extends PacketRewriter<PlayerT, I
         for (SlotDisplay ingredient : ingredients) {
             final SlotDisplay result = rewrite(this.mapper, player, view, ingredient, slots[index]);
             if (result == null) {
-                return null;
-            } else if (result == SlotDisplay.Empty.INSTANCE) {
                 list.add(ingredient);
             } else {
                 list.add(result);
@@ -216,6 +145,6 @@ public class PlaceGhostRecipeRewriter<PlayerT> extends PacketRewriter<PlayerT, I
             }
             index++;
         }
-        return edited ? list : EMPTY_LIST;
+        return edited ? list : null;
     }
 }

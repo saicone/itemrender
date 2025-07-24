@@ -4,6 +4,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.render.registry.ItemRegistry;
 import com.saicone.item.util.Lookup;
 import net.minecraft.server.v1_11_R1.ItemStack;
 import net.minecraft.server.v1_11_R1.PacketPlayOutWindowItems;
@@ -14,15 +15,6 @@ import java.lang.invoke.MethodHandle;
 import java.util.List;
 
 public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutWindowItems> {
-
-    // Reflection is used due field ItemStack#a changed to ItemStack#b on version 1.16.1
-    private static final ItemStack EMPTY = Lookup.field(ItemStack.class, ItemStack.class, "a", "b").map(field -> {
-        try {
-            return (ItemStack) field.get(null);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-    }).orElseThrow();
 
     private static final MethodHandle ITEMS = Lookup.getter(PacketPlayOutWindowItems.class, List.class, "b");
 
@@ -38,18 +30,14 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
     @Override
     public @Nullable PacketPlayOutWindowItems rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutWindowItems packet) {
         final List<ItemStack> items = Lookup.invoke(ITEMS, packet);
-        int empty = 0;
+        if (items.isEmpty()) {
+            return packet;
+        }
         for (int slot = 0; slot < items.size(); slot++) {
             final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
-            if (result.item() == null) {
-                items.set(slot, EMPTY);
-                empty++;
-            } else if (result.edited()) {
-                items.set(slot, result.item());
+            if (result.edited()) {
+                items.set(slot, result.itemOrDefault(ItemRegistry.empty()));
             }
-        }
-        if (empty == items.size()) {
-            return null;
         }
         return packet;
     }

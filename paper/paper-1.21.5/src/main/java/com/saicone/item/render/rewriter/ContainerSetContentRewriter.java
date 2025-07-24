@@ -25,18 +25,14 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
     @Override
     public @Nullable ClientboundContainerSetContentPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundContainerSetContentPacket packet) {
         final List<ItemStack> items = packet.items();
-        int empty = 0;
+        if (items.isEmpty()) {
+            return packet;
+        }
         for (int slot = 0; slot < items.size(); slot++) {
             final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
-            if (result.item() == null) {
-                items.set(slot, ItemStack.EMPTY);
-                empty++;
-            } else if (result.edited()) {
-                items.set(slot, result.item());
+            if (result.edited()) {
+                items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
             }
-        }
-        if (empty == items.size()) {
-            return null;
         }
         return packet;
     }

@@ -26,11 +26,8 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, ClientboundUpdateRecipesPacket> {
-
-    private final NonNullList<?> EMPTY_LIST = NonNullList.create();
 
     private static final MethodHandle COOKING_INGREDIENT = Lookup.getter(AbstractCookingRecipe.class, Ingredient.class, "ingredient", "d");
 
@@ -51,17 +48,14 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     @Override
     public @Nullable ClientboundUpdateRecipesPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundUpdateRecipesPacket packet) {
         final List<Recipe<?>> recipes = packet.getRecipes();
+        if (recipes.isEmpty()) {
+            return packet;
+        }
         for (int i = 0; i < recipes.size(); i++) {
             final Recipe<?> recipe = apply(player, view, recipes.get(i));
-            if (recipe == null) {
-                recipes.remove(i);
-                i--;
-            } else {
+            if (recipe != null) {
                 recipes.set(i, recipe);
             }
-        }
-        if (recipes.isEmpty()) {
-            return null;
         }
         return packet;
     }
@@ -71,172 +65,134 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     protected Recipe<?> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Recipe<?> recipe) {
         if (recipe instanceof AbstractCookingRecipe cooking) {
             final var result = this.mapper.apply(player, recipe.getResultItem(), view, ItemSlot.Recipe.COOKING_RESULT);
-            if (result.item() == null) {
-                return null;
-            }
 
             final Ingredient ingredient = Lookup.invoke(COOKING_INGREDIENT, cooking);
 
             Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
             if (applied == null) {
-                return null;
-            } else if (applied == Ingredient.EMPTY) {
                 if (!result.edited()) {
-                    return recipe;
+                    return null;
                 }
                 applied = ingredient;
             }
 
             if (recipe instanceof BlastingRecipe) {
-                return new BlastingRecipe(cooking.getId(), cooking.getGroup(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new BlastingRecipe(cooking.getId(), cooking.getGroup(), applied, result.itemOrDefault(ItemStack.EMPTY), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof CampfireCookingRecipe) {
-                return new CampfireCookingRecipe(cooking.getId(), cooking.getGroup(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new CampfireCookingRecipe(cooking.getId(), cooking.getGroup(), applied, result.itemOrDefault(ItemStack.EMPTY), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof SmeltingRecipe) {
-                return new SmeltingRecipe(cooking.getId(), cooking.getGroup(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new SmeltingRecipe(cooking.getId(), cooking.getGroup(), applied, result.itemOrDefault(ItemStack.EMPTY), cooking.getExperience(), cooking.getCookingTime());
             } else if (recipe instanceof SmokingRecipe) {
-                return new SmokingRecipe(cooking.getId(), cooking.getGroup(), applied, result.item(), cooking.getExperience(), cooking.getCookingTime());
+                return new SmokingRecipe(cooking.getId(), cooking.getGroup(), applied, result.itemOrDefault(ItemStack.EMPTY), cooking.getExperience(), cooking.getCookingTime());
             }
         } else if (recipe instanceof ShapedRecipe shaped) {
             final var result = this.mapper.apply(player, recipe.getResultItem(), view, ItemSlot.Recipe.SHAPED_RESULT);
-            if (result.item() == null) {
-                return null;
-            }
 
             NonNullList<Ingredient> ingredients = apply(player, view, shaped.getIngredients(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
             if (ingredients == null) {
-                return null;
-            } else if (ingredients == EMPTY_LIST) {
                 if (!result.edited()) {
-                    return recipe;
+                    return null;
                 }
                 ingredients = shaped.getIngredients();
             }
 
-            return new ShapedRecipe(shaped.getId(), shaped.getGroup(), shaped.getWidth(), shaped.getHeight(), ingredients, result.item());
+            return new ShapedRecipe(shaped.getId(), shaped.getGroup(), shaped.getWidth(), shaped.getHeight(), ingredients, result.itemOrDefault(ItemStack.EMPTY));
         } else if (recipe instanceof ShapelessRecipe shapeless) {
             final var result = this.mapper.apply(player, recipe.getResultItem(), view, ItemSlot.Recipe.SHAPELESS_RESULT);
-            if (result.item() == null) {
-                return null;
-            }
 
             NonNullList<Ingredient> ingredients = apply(player, view, shapeless.getIngredients(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
             if (ingredients == null) {
-                return null;
-            } else if (ingredients == EMPTY_LIST) {
                 if (!result.edited()) {
-                    return recipe;
+                    return null;
                 }
                 ingredients = shapeless.getIngredients();
             }
 
-            return new ShapelessRecipe(shapeless.getId(), shapeless.getGroup(), result.item(), ingredients);
+            return new ShapelessRecipe(shapeless.getId(), shapeless.getGroup(), result.itemOrDefault(ItemStack.EMPTY), ingredients);
         } else if (recipe instanceof StonecutterRecipe stonecutter) {
             final var result = this.mapper.apply(player, recipe.getResultItem(), view, ItemSlot.Recipe.STONECUTTER_RESULT);
-            if (result.item() == null) {
-                return null;
-            }
 
             final Ingredient ingredient = Lookup.invoke(SINGLE_INGREDIENT, stonecutter);
 
             Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
             if (applied == null) {
-                return null;
-            } else if (applied == Ingredient.EMPTY) {
                 if (!result.edited()) {
-                    return recipe;
+                    return null;
                 }
                 applied = ingredient;
             }
 
-            return new StonecutterRecipe(stonecutter.getId(), stonecutter.getGroup(), applied, result.item());
+            return new StonecutterRecipe(stonecutter.getId(), stonecutter.getGroup(), applied, result.itemOrDefault(ItemStack.EMPTY));
         } else if (recipe instanceof UpgradeRecipe upgrade) {
             final var result = this.mapper.apply(player, recipe.getResultItem(), view, ItemSlot.Recipe.TRANSFORM_RESULT);
-            if (result.item() == null) {
+
+            Ingredient base = apply(player, view, Lookup.invoke(TRANSFORM_BASE, upgrade), ItemSlot.Recipe.TRANSFORM_BASE);
+            Ingredient addition = apply(player, view, Lookup.invoke(TRANSFORM_ADDITION, upgrade), ItemSlot.Recipe.TRANSFORM_ADDITION);
+
+            if (!result.edited() && base == null && addition == null) {
                 return null;
             }
 
-            final Ingredient[] ingredients = apply(
-                    () -> apply(player, view, Lookup.invoke(TRANSFORM_BASE, upgrade), ItemSlot.Recipe.TRANSFORM_BASE),
-                    () -> apply(player, view, Lookup.invoke(TRANSFORM_ADDITION, upgrade), ItemSlot.Recipe.TRANSFORM_ADDITION)
-            );
-            if (ingredients == null) {
-                return null;
-            } else if (ingredients.length == 0) {
-                return recipe;
+            if (base == null) {
+                base = Lookup.invoke(TRANSFORM_BASE, upgrade);
             }
 
-            return new UpgradeRecipe(upgrade.getId(), ingredients[0], ingredients[1], result.item());
+            if (addition == null) {
+                addition = Lookup.invoke(TRANSFORM_ADDITION, upgrade);
+            }
+
+            return new UpgradeRecipe(upgrade.getId(), base, addition, result.itemOrDefault(ItemStack.EMPTY));
         }
-        return recipe;
+        return null;
     }
 
     @Nullable
-    @SuppressWarnings("unchecked")
     protected NonNullList<Ingredient> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull NonNullList<Ingredient> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
+        if (ingredients.isEmpty()) {
+            return null;
+        }
         final NonNullList<Ingredient> list = NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
-        int empty = 0;
         boolean edited = false;
         for (int i = 0; i < ingredients.size(); i++) {
             final Ingredient ingredient = ingredients.get(i);
             final Ingredient result = apply(player, view, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
-            if (result == Ingredient.EMPTY) {
-                list.add(ingredient);
-                continue;
-            }
             if (result == null) {
-                list.add(Ingredient.EMPTY);
-                empty++;
+                list.add(ingredient);
             } else {
                 list.add(result);
+                edited = true;
             }
-            edited = true;
         }
-        if (empty == list.size()) {
-            return null;
+        if (edited) {
+            return list;
         }
         list.clear();
-        return edited ? list : (NonNullList<Ingredient>) EMPTY_LIST;
-    }
-
-    @Nullable
-    protected Ingredient[] apply(@NotNull Supplier<Ingredient>... ingredients) {
-        final Ingredient[] array = new Ingredient[ingredients.length];
-        boolean edited = false;
-        for (int i = 0; i < ingredients.length; i++) {
-            final Ingredient ingredient = ingredients[i].get();
-            if (ingredient == null) {
-                return null;
-            } else {
-                array[i] = ingredient;
-                if (ingredient != Ingredient.EMPTY) {
-                    edited = true;
-                }
-            }
-        }
-        return edited ? array : new Ingredient[0];
+        return null;
     }
 
     @Nullable
     protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Ingredient ingredient, @NotNull ItemSlot slot) {
-        if (ingredient == Ingredient.EMPTY) {
-            return Ingredient.EMPTY;
+        if (ingredient == Ingredient.EMPTY || ingredient.getItems().length == 0) {
+            return null;
         }
         final List<Ingredient.Value> items = new ArrayList<>(ingredient.getItems().length);
         boolean edited = false;
         for (ItemStack item : ingredient.getItems()) {
             if (item == null) {
-                return null;
+                continue;
             }
             final var result = this.mapper.apply(player, item, view, slot);
-            items.add(new Ingredient.ItemValue(result.item()));
             if (result.edited()) {
+                items.add(new Ingredient.ItemValue(result.itemOrDefault(ItemStack.EMPTY)));
                 edited = true;
+            } else {
+                items.add(new Ingredient.ItemValue(item));
             }
         }
         if (edited) {
             return new Ingredient(items.stream());
         }
         items.clear();
-        return Ingredient.EMPTY;
+        return null;
     }
 }

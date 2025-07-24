@@ -23,7 +23,7 @@ public interface ComponentRewriter<PlayerT> {
             final HoverEvent.ItemStackInfo info = event.getValue(HoverEvent.Action.SHOW_ITEM);
             if (info != null) {
                 final var result = mapper.apply(player, info.getItemStack(), view, null);
-                if (result.item() == null) {
+                if (result.empty()) {
                     mutable.setStyle(mutable.getStyle().withHoverEvent(null));
                     edited = true;
                 } else if (result.edited()) {

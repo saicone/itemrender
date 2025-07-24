@@ -1,10 +1,10 @@
 package com.saicone.item.render.rewriter;
 
-import com.saicone.item.ItemHolder;
 import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import com.saicone.item.render.registry.ItemRegistry;
 import com.saicone.item.util.Lookup;
 import net.minecraft.server.v1_14_R1.ItemStack;
 import net.minecraft.server.v1_14_R1.MerchantRecipe;
@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
-import java.util.function.Supplier;
 
 public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutOpenWindowMerchant> {
 
@@ -38,52 +37,31 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
         final MerchantRecipeList offers = new MerchantRecipeList();
         boolean edited = false;
         for (MerchantRecipe offer : (MerchantRecipeList) Lookup.invoke(OFFERS, packet)) {
-            final ItemStack[] items = applyItems(
-                    () -> this.mapper.apply(player, offer.a(), view, ItemSlot.Merchant.COST_A),
-                    () -> this.mapper.apply(player, offer.getBuyItem2(), view, ItemSlot.Merchant.COST_B),
-                    () -> this.mapper.apply(player, offer.getSellingItem(), view, ItemSlot.Merchant.RESULT)
-            );
-            if (items != null) {
-                if (items.length == 0) {
-                    offers.add(offer);
-                } else {
-                    final MerchantRecipe newOffer = new MerchantRecipe(
-                            items[0],
-                            items[1],
-                            items[2],
-                            offer.getUses(),
-                            offer.getMaxUses(),
-                            offer.getXp(),
-                            offer.getPriceMultiplier(),
-                            Lookup.invoke(DEMAND, offer)
-                    );
-                    newOffer.setSpecialPrice(offer.getSpecialPrice());
-                    offers.add(newOffer);
-                    edited = true;
-                }
+            final var costA = this.mapper.apply(player, offer.a(), view, ItemSlot.Merchant.COST_A);
+            final var costB = this.mapper.apply(player, offer.getBuyItem2(), view, ItemSlot.Merchant.COST_B);
+            final var result = this.mapper.apply(player, offer.getSellingItem(), view, ItemSlot.Merchant.RESULT);
+            if (!costA.edited() && !costB.edited() && !result.edited()) {
+                offers.add(offer);
+                continue;
             }
+
+            final MerchantRecipe newOffer = new MerchantRecipe(
+                    costA.itemOrDefault(ItemRegistry.empty()),
+                    costB.itemOrDefault(ItemRegistry.empty()),
+                    result.itemOrDefault(ItemRegistry.empty()),
+                    offer.getUses(),
+                    offer.getMaxUses(),
+                    offer.getXp(),
+                    offer.getPriceMultiplier(),
+                    Lookup.invoke(DEMAND, offer)
+            );
+            newOffer.setSpecialPrice(offer.getSpecialPrice());
+            offers.add(newOffer);
+            edited = true;
         }
         if (edited) {
             Lookup.invoke(SET_OFFERS, packet, offers);
         }
         return packet;
-    }
-
-    @Nullable
-    protected ItemStack[] applyItems(@NotNull Supplier<ItemHolder<PlayerT, ItemStack>>... items) {
-        final ItemStack[] array = new ItemStack[items.length];
-        boolean edited = false;
-        for (int i = 0; i < items.length; i++) {
-            final ItemHolder<PlayerT, ItemStack> item = items[i].get();
-            if (item == null) {
-                return null;
-            } else {
-                array[i] = item.item();
-                if (item.edited()) {
-                    edited = true;
-                }
-            }
-        }
-        return edited ? array : new ItemStack[0];
     }
 }

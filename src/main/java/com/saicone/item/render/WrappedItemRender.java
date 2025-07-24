@@ -17,7 +17,7 @@ public abstract class WrappedItemRender<PlayerT, ItemA, ItemB> extends ItemRende
         final ItemA item = holder.item() == null ? null : wrap(holder.item());
         final var wrapped = holder(holder.player(), item, holder.view(), holder.slot());
         apply(wrapped);
-        holder.update(unwrap(wrapped.item()));
+        holder.update(wrapped.item() == null ? null : unwrap(wrapped.item()), wrapped.edited(), wrapped.cancel());
     }
 
     @Override

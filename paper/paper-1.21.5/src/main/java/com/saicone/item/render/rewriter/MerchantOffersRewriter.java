@@ -1,6 +1,5 @@
 package com.saicone.item.render.rewriter;
 
-import com.saicone.item.ItemHolder;
 import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
@@ -15,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, ClientboundMerchantOffersPacket> {
 
@@ -33,53 +31,32 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
         final MerchantOffers offers = new MerchantOffers();
         boolean edited = false;
         for (MerchantOffer offer : packet.getOffers()) {
-            final ItemStack[] items = applyItems(
-                    () -> this.mapper.apply(player, offer.getBaseCostA(), view, ItemSlot.Merchant.COST_A),
-                    () -> this.mapper.apply(player, offer.getCostB(), view, ItemSlot.Merchant.COST_B),
-                    () -> this.mapper.apply(player, offer.getResult(), view, ItemSlot.Merchant.RESULT)
-            );
-            if (items != null) {
-                if (items.length == 0) {
-                    offers.add(offer);
-                } else {
-                    final ItemStack itemA = items[0];
-                    offers.add(new MerchantOffer(
-                            new ItemCost(itemA.getItemHolder(), itemA.getCount(), DataComponentExactPredicate.allOf(itemA.getComponents()), itemA),
-                            Optional.ofNullable(items[1]).map(item -> new ItemCost(item.getItemHolder(), item.getCount(), DataComponentExactPredicate.allOf(item.getComponents()), item)),
-                            items[2],
-                            offer.getUses(),
-                            offer.getMaxUses(),
-                            offer.getXp(),
-                            offer.getPriceMultiplier(),
-                            offer.getDemand(),
-                            offer.ignoreDiscounts,
-                            null
-                    ));
-                    edited = true;
-                }
+            final var costA = this.mapper.apply(player, offer.getBaseCostA(), view, ItemSlot.Merchant.COST_A);
+            final var costB = this.mapper.apply(player, offer.getCostB(), view, ItemSlot.Merchant.COST_B);
+            final var result = this.mapper.apply(player, offer.getResult(), view, ItemSlot.Merchant.RESULT);
+
+            if (!costA.edited() && !costB.edited() && !result.edited()) {
+                offers.add(offer);
+            } else {
+                final ItemStack itemA = costA.itemOrDefault(ItemStack.EMPTY);
+                offers.add(new MerchantOffer(
+                        new ItemCost(itemA.getItemHolder(), itemA.getCount(), DataComponentExactPredicate.allOf(itemA.getComponents()), itemA),
+                        Optional.ofNullable(costB.item()).map(item -> new ItemCost(item.getItemHolder(), item.getCount(), DataComponentExactPredicate.allOf(item.getComponents()), item)),
+                        result.itemOrDefault(ItemStack.EMPTY),
+                        offer.getUses(),
+                        offer.getMaxUses(),
+                        offer.getXp(),
+                        offer.getPriceMultiplier(),
+                        offer.getDemand(),
+                        offer.ignoreDiscounts,
+                        null
+                ));
+                edited = true;
             }
         }
         if (edited) {
             return new ClientboundMerchantOffersPacket(packet.getContainerId(), offers, packet.getVillagerLevel(), packet.getVillagerXp(), packet.showProgress(), packet.canRestock());
         }
         return packet;
-    }
-
-    @Nullable
-    protected ItemStack[] applyItems(@NotNull Supplier<ItemHolder<PlayerT, ItemStack>>... items) {
-        final ItemStack[] array = new ItemStack[items.length];
-        boolean edited = false;
-        for (int i = 0; i < items.length; i++) {
-            final ItemHolder<PlayerT, ItemStack> item = items[i].get();
-            if (item == null) {
-                return null;
-            } else {
-                array[i] = item.item();
-                if (item.edited()) {
-                    edited = true;
-                }
-            }
-        }
-        return edited ? array : new ItemStack[0];
     }
 }

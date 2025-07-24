@@ -45,11 +45,8 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             final DataWatcher.Item<?> data = packedItems.get(i);
             if (data.a().b() == DataWatcherRegistry.f) {
                 final var result = this.mapper.apply(player, ((Optional<ItemStack>) data.b()).orNull(), view, null);
-                if (result.item() == null) {
-                    packedItems.remove(i);
-                    i--;
-                } else if (result.edited()) {
-                    final DataWatcher.Item<?> newData = new DataWatcher.Item(data.a(), result.item());
+                if (result.edited()) {
+                    final DataWatcher.Item<?> newData = new DataWatcher.Item(data.a(), Optional.fromNullable(result.item()));
                     newData.a(data.c());
                     packedItems.set(i, newData);
                 }

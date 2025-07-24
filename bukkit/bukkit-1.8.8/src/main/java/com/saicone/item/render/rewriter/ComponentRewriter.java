@@ -2,6 +2,7 @@ package com.saicone.item.render.rewriter;
 
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
+import com.saicone.item.render.registry.ItemRegistry;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
 import net.minecraft.server.v1_8_R3.ChatHoverable;
 import net.minecraft.server.v1_8_R3.IChatBaseComponent;
@@ -15,13 +16,6 @@ import java.util.List;
 
 public interface ComponentRewriter<PlayerT, ItemT> {
 
-    // NOTE:
-    // v1_8_R3  = ItemStack#createStack()
-    // v1_11_R1 = new ItemStack()
-    // v1_13_R1 = ItemStack#a()
-    //
-    // Can be optimized? Yes. But will require a method lookup
-
     @Nullable
     @SuppressWarnings("unchecked")
     default <ComponentT> ComponentT rewrite(@NotNull PacketItemMapper<PlayerT, ItemT> mapper, @NotNull PlayerT player, @NotNull ItemView view, @NotNull ComponentT c) {
@@ -31,9 +25,9 @@ public interface ComponentRewriter<PlayerT, ItemT> {
         final ChatHoverable event = component.getChatModifier().i();
         if (event != null && event.a() == ChatHoverable.EnumHoverAction.SHOW_ITEM) {
             try {
-                final ItemStack item = ItemStack.createStack(MojangsonParser.parse(event.b().getText()));
+                final ItemStack item = ItemRegistry.create(MojangsonParser.parse(event.b().getText()));
                 final var result = mapper.apply(player, (ItemT) item, view, null);
-                if (result.item() == null) {
+                if (result.empty()) {
                     component.setChatModifier(component.getChatModifier().setChatHoverable(null));
                     edited = true;
                 } else if (result.edited()) {

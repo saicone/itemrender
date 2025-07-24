@@ -26,7 +26,7 @@ public interface ComponentRewriter<PlayerT, ItemT> {
             try {
                 final ItemStack item = ItemStack.a(MojangsonParser.parse(event.b().getText()));
                 final var result = mapper.apply(player, (ItemT) item, view, null);
-                if (result.item() == null) {
+                if (result.empty()) {
                     component.setChatModifier(component.getChatModifier().setChatHoverable(null));
                     edited = true;
                 } else if (result.edited()) {
