@@ -2,6 +2,8 @@ plugins {
     id 'io.papermc.paperweight.userdev' version '2.0.0-beta.18' apply false
 }
 
+description = 'ItemRender Paper'
+
 allprojects {
     apply plugin: 'com.gradleup.shadow'
 
@@ -19,82 +21,10 @@ allprojects {
     }
 }
 
-def modules = [
-        'paper-1.17.1': [ depends: null, package: '.v1_17_R1', java: JavaVersion.VERSION_17 ],
-        'paper-1.18.1': [ depends: ':paper:paper-1.17.1', package: '.v1_18_R1', java: JavaVersion.VERSION_17 ],
-        'paper-1.18.2': [ depends: ':paper:paper-1.17.1', package: '.v1_18_R2', java: JavaVersion.VERSION_17 ],
-        'paper-1.19.2': [ depends: ':paper:paper-1.17.1', package: '.v1_19_R1', java: JavaVersion.VERSION_17 ],
-        'paper-1.19.3': [ depends: ':paper:paper-1.19.2', package: '.v1_19_R2', java: JavaVersion.VERSION_17 ],
-        'paper-1.19.4': [ depends: ':paper:paper-1.19.3', package: '.v1_19_R3', java: JavaVersion.VERSION_17 ],
-        'paper-1.20.1': [ depends: ':paper:paper-1.19.4', package: '.v1_20_R1', java: JavaVersion.VERSION_17 ],
-        'paper-1.20.2': [ depends: ':paper:paper-1.19.3', package: '.v1_20_R2', java: JavaVersion.VERSION_17 ],
-        'paper-1.20.4': [ depends: ':paper:paper-1.19.3', package: '.v1_20_R3', java: JavaVersion.VERSION_17 ],
-        'paper-1.20.6': [ depends: ':paper:paper-1.20.4' ],
-        'paper-1.21.1': [ depends: ':paper:paper-1.20.6' ],
-        'paper-1.21.3': [ depends: ':paper:paper-1.20.6' ],
-        'paper-1.21.4': [ depends: ':paper:paper-1.21.3' ],
-        'paper-1.21.5': [ depends: ':paper:paper-1.21.3' ],
-        'paper-1.21.8': [ depends: ':paper:paper-1.21.5' ]
-]
-
 subprojects {
-    apply plugin: 'io.papermc.paperweight.userdev'
+    description = 'ItemRender Paper ' + project.name.substring(6)
 
-    def module = modules[project.name]
-
-    if (module.depends != null) {
-        dependencies {
-            api project(module.depends.toString())
-        }
-    }
-
-    if (module.java != null) {
-        java {
-            sourceCompatibility = module.java
-            targetCompatibility = module.java
-        }
-    }
-
-    assemble {
-        dependsOn(reobfJar)
-    }
-
-    jar {
-        dependsOn(reobfJar)
-    }
-
-    def toPackage = 'org.bukkit.craftbukkit' + (module.package ?: '')
-    shadowJar {
-        for (final def entry in modules.entrySet()) {
-            if (entry.key == project.name || entry.value.package == null) {
-                break
-            }
-            def fromPackage = 'org.bukkit.craftbukkit' + entry.value.package
-            relocate fromPackage, toPackage
-        }
-    }
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
-                from components.shadow
-            }
-
-            reobf(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
-                from components.shadow
-
-                artifact(reobfJar.outputJar) {
-                    classifier 'reobf'
-                }
-            }
-        }
-    }
+    apply from: "$rootDir/gradle/paper-module.gradle"
 }
 
 repositories {
@@ -113,16 +43,23 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-    withJavadocJar()
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
             from components.shadow
+
+            afterEvaluate {
+                artifact tasks.named('sourcesJar')
+                artifact tasks.named('javadocJar')
+            }
+
+            pom {
+                afterEvaluate {
+                    description = 'ItemRender API for paper based projects'
+                }
+            }
         }
     }
 }

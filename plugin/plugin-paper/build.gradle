@@ -1,3 +1,5 @@
+description = 'ItemRender Paper Plugin'
+
 repositories {
     maven { url 'https://repo.papermc.io/repository/maven-public/' }
 }

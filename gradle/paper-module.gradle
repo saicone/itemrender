@@ -1,0 +1,85 @@
+apply plugin: 'io.papermc.paperweight.userdev'
+
+def modules = [
+        'paper-1.17.1': [ depends: null, package: '.v1_17_R1', java: JavaVersion.VERSION_17 ],
+        'paper-1.18.1': [ depends: ':paper:paper-1.17.1', package: '.v1_18_R1', java: JavaVersion.VERSION_17 ],
+        'paper-1.18.2': [ depends: ':paper:paper-1.17.1', package: '.v1_18_R2', java: JavaVersion.VERSION_17 ],
+        'paper-1.19.2': [ depends: ':paper:paper-1.17.1', package: '.v1_19_R1', java: JavaVersion.VERSION_17 ],
+        'paper-1.19.3': [ depends: ':paper:paper-1.19.2', package: '.v1_19_R2', java: JavaVersion.VERSION_17 ],
+        'paper-1.19.4': [ depends: ':paper:paper-1.19.3', package: '.v1_19_R3', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.1': [ depends: ':paper:paper-1.19.4', package: '.v1_20_R1', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.2': [ depends: ':paper:paper-1.19.3', package: '.v1_20_R2', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.4': [ depends: ':paper:paper-1.19.3', package: '.v1_20_R3', java: JavaVersion.VERSION_17 ],
+        'paper-1.20.6': [ depends: ':paper:paper-1.20.4' ],
+        'paper-1.21.1': [ depends: ':paper:paper-1.20.6' ],
+        'paper-1.21.3': [ depends: ':paper:paper-1.20.6' ],
+        'paper-1.21.4': [ depends: ':paper:paper-1.21.3' ],
+        'paper-1.21.5': [ depends: ':paper:paper-1.21.3' ],
+        'paper-1.21.8': [ depends: ':paper:paper-1.21.5' ]
+]
+
+def module = modules[project.name]
+
+if (module.depends != null) {
+    dependencies {
+        api project(module.depends.toString())
+    }
+}
+
+if (module.java != null) {
+    java {
+        sourceCompatibility = module.java
+        targetCompatibility = module.java
+    }
+}
+
+assemble {
+    dependsOn(reobfJar)
+}
+
+// Ugly fix to re-obfuscate shaded jar
+jar {
+    dependsOn(reobfJar)
+}
+
+// Ugly fix to sign re-obfuscated jar
+signMavenPublication {
+    dependsOn(reobfJar)
+}
+
+def toPackage = 'org.bukkit.craftbukkit' + (module.package ?: '')
+shadowJar {
+    for (final def entry in modules.entrySet()) {
+        if (entry.key == project.name || entry.value.package == null) {
+            break
+        }
+        def fromPackage = 'org.bukkit.craftbukkit' + entry.value.package
+        relocate fromPackage, toPackage
+    }
+}
+
+// Ugly fix due some remapped classes redirect imports to wrong class
+tasks.withType(Javadoc).configureEach {
+    failOnError = false
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+// Ugly fix to publish re-obfuscated jar
+def reobfJarFile = layout.buildDirectory.dir('libs').get().file("${project.name}-${project.version}-reobf.jar")
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.shadow
+
+            afterEvaluate {
+                artifact tasks.named('sourcesJar')
+                artifact tasks.named('javadocJar')
+            }
+
+            artifact(reobfJarFile) {
+                classifier 'reobf'
+            }
+        }
+    }
+}

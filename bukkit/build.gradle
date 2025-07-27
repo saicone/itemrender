@@ -1,3 +1,5 @@
+description = 'ItemRender Bukkit'
+
 allprojects {
     apply plugin: 'com.gradleup.shadow'
 
@@ -26,57 +28,23 @@ allprojects {
         publishing {
             publications {
                 maven(MavenPublication) {
-                    groupId project.group
-                    artifactId project.name
-                    version project.version
                     from components.shadow
+
+                    afterEvaluate {
+                        artifact tasks.named('sourcesJar')
+                        artifact tasks.named('javadocJar')
+                    }
                 }
             }
         }
     }
 }
 
-def modules = [
-        'bukkit-1.8.8': [ depends: null, package: '.v1_8_R3' ],
-        'bukkit-1.9.2': [ depends: ':bukkit:bukkit-1.8.8', package: '.v1_9_R1' ],
-        'bukkit-1.9.4': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_9_R2' ],
-        'bukkit-1.10.2': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_10_R1' ],
-        'bukkit-1.11.2': [ depends: ':bukkit:bukkit-1.9.2', package: '.v1_11_R1' ],
-        'bukkit-1.12.2': [ depends: ':bukkit:bukkit-1.11.2', package: '.v1_12_R1' ],
-        'bukkit-1.13': [ depends: ':bukkit:bukkit-1.12.2', package: '.v1_13_R1' ],
-        'bukkit-1.13.2': [ depends: ':bukkit:bukkit-1.13', package: '.v1_13_R2' ],
-        'bukkit-1.14.4': [ depends: ':bukkit:bukkit-1.13', package: '.v1_14_R1' ],
-        'bukkit-1.15.2': [ depends: ':bukkit:bukkit-1.14.4', package: '.v1_15_R1' ],
-        'bukkit-1.16.1': [ depends: ':bukkit:bukkit-1.14.4', package: '.v1_16_R1' ],
-        'bukkit-1.16.3': [ depends: ':bukkit:bukkit-1.16.1', package: '.v1_16_R2' ],
-        'bukkit-1.16.5': [ depends: ':bukkit:bukkit-1.16.1', package: '.v1_16_R3' ]
-]
-
 subprojects {
-    def module = modules[project.name]
+    description = 'ItemRender Bukkit ' + project.name.substring(7)
 
-    if (module == null) {
-        return
-    }
-
-    if (module.depends != null) {
-        dependencies {
-            api project(module.depends.toString())
-        }
-    }
-
-    def toPackage1 = 'org.bukkit.craftbukkit' + module.package
-    def toPackage2 = 'net.minecraft.server' + module.package
-    shadowJar {
-        for (final def entry in modules.entrySet()) {
-            if (entry.key == project.name) {
-                break
-            }
-            def fromPackage1 = 'org.bukkit.craftbukkit' + entry.value.package
-            def fromPackage2 = 'net.minecraft.server' + entry.value.package
-            relocate fromPackage1, toPackage1
-            relocate fromPackage2, toPackage2
-        }
+    if (project.name != 'stickynote') {
+        apply from: "$rootDir/gradle/bukkit-module.gradle"
     }
 }
 
@@ -85,6 +53,14 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT'
 }
 
-java {
-    withJavadocJar()
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                afterEvaluate {
+                    description = 'ItemRender API for bukkit based projects'
+                }
+            }
+        }
+    }
 }
