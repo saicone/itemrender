@@ -27,6 +27,11 @@ public interface ItemSlot {
         return new Pair<>(anyA, anyB);
     }
 
+    @NotNull
+    static IntRange range(int from, int to) {
+        return new IntRange(from, to);
+    }
+
     boolean matches(Object object);
 
     class Cache {
@@ -49,6 +54,11 @@ public interface ItemSlot {
 
         public Any(@NotNull T any) {
             this.any = any;
+        }
+
+        @NotNull
+        public T value() {
+            return any;
         }
 
         @Override
@@ -83,6 +93,11 @@ public interface ItemSlot {
             this.anyB = anyB;
         }
 
+        @NotNull
+        public B valueB() {
+            return anyB;
+        }
+
         @Override
         public boolean matches(Object object) {
             if (object instanceof Pair<?,?>) {
@@ -106,6 +121,38 @@ public interface ItemSlot {
             int result = super.hashCode();
             result = 31 * result + anyB.hashCode();
             return result;
+        }
+    }
+
+    class IntRange extends Pair<Integer, Integer> {
+
+        public IntRange(@NotNull Integer from, @NotNull Integer to) {
+            super(from, to);
+        }
+
+        @Override
+        public boolean matches(Object object) {
+            if (object instanceof Pair<?, ?>) {
+                if (((Pair<?, ?>) object).valueB() instanceof Number) {
+                    if (matches(((Number) ((Pair<?, ?>) object).valueB()).intValue())) {
+                        return true;
+                    }
+                }
+                if (((Pair<?, ?>) object).value() instanceof Number) {
+                    return matches(((Number) ((Pair<?, ?>) object).value()).intValue());
+                }
+            } else if (object instanceof Any<?>) {
+                if (((Any<?>) object).value() instanceof Number) {
+                    return matches(((Number) ((Any<?>) object).value()).intValue());
+                }
+            } else if (object instanceof Number) {
+                return matches(((Number) object).intValue());
+            }
+            return false;
+        }
+
+        public boolean matches(int number) {
+            return number >= value() && number <= valueB();
         }
     }
 
