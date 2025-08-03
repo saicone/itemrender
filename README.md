@@ -12,8 +12,8 @@
     <a href="https://github.com/saicone/itemrender">
         <img src="https://img.shields.io/github/languages/code-size/saicone/itemrender?logo=github&logoColor=white&style=flat-square"/>
     </a>
-    <a href="https://jitpack.io/#com.saicone/itemrender">
-        <img src="https://jitpack.io/v/com.saicone/itemrender.svg?style=flat-square"/>
+    <a href="https://mvnrepository.com/artifact/com.saicone.itemrender/itemrender">
+        <img src="https://img.shields.io/maven-central/v/com.saicone.itemrender/itemrender"/>
     </a>
     <a href="https://javadoc.saicone.com/itemrender/overview-summary.html">
         <img src="https://img.shields.io/badge/JavaDoc-Online-green?style=flat-square"/>

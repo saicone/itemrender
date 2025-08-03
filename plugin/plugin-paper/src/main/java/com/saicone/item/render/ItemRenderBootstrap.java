@@ -1,5 +1,6 @@
 package com.saicone.item.render;
 
+import com.saicone.item.util.MavenMirror;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext;
@@ -22,7 +23,7 @@ public class ItemRenderBootstrap implements PluginBootstrap, PluginLoader {
 
         MavenLibraryResolver resolver = new MavenLibraryResolver();
         resolver.addDependency(new Dependency(new DefaultArtifact(ItemRenderLoader.dependency("group:artifact:classifier:version")), null));
-        resolver.addRepository(new RemoteRepository.Builder("jitpack", "default", ItemRenderLoader.repository()).build());
+        resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenMirror.getOrDefault(MavenMirror.DEFAULT)).build());
 
         classpathBuilder.addLibrary(resolver);
     }

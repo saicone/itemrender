@@ -3,6 +3,7 @@ package com.saicone.item.render;
 import com.saicone.item.ItemRender;
 import com.saicone.item.network.PacketItemRender;
 import com.saicone.item.util.MC;
+import com.saicone.item.util.MavenMirror;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -52,11 +53,6 @@ public class ItemRenderLoader {
             return true;
         } catch (ClassNotFoundException ignored) { }
         return false;
-    }
-
-    @NotNull
-    public static String repository() {
-        return "https://jitpack.io/";
     }
 
     @NotNull
@@ -122,7 +118,7 @@ public class ItemRenderLoader {
 
         if (!file.exists()) {
             file.getParentFile().mkdirs();
-            final URLConnection con = new URL(repository() + path).openConnection();
+            final URLConnection con = new URL(MavenMirror.getOrDefault(MavenMirror.DEFAULT) + path).openConnection();
             con.addRequestProperty("User-Agent", "Mozilla/5.0");
             try (InputStream in = con.getInputStream(); OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
                 byte[] buffer = new byte[4096];
