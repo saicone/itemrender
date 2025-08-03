@@ -32,7 +32,7 @@ public class ItemRenderPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         try {
-            renderLoader.load();
+            renderLoader.load(true, true);
         } catch (Throwable t) {
             throw new RuntimeException("Cannot load ItemRenderLoader", t);
         }

@@ -1,6 +1,7 @@
 package com.saicone.item.render;
 
 import com.saicone.item.ItemRender;
+import com.saicone.item.network.PacketItemRender;
 import com.saicone.item.util.MC;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -45,6 +46,14 @@ public class ItemRenderLoader {
         VERSION = version;
     }
 
+    public static boolean isRenderPresent() {
+        try {
+            Class.forName(ITEM_RENDER);
+            return true;
+        } catch (ClassNotFoundException ignored) { }
+        return false;
+    }
+
     @NotNull
     public static String repository() {
         return "https://jitpack.io/";
@@ -79,17 +88,16 @@ public class ItemRenderLoader {
     private final Plugin plugin;
 
     private PublicClassLoader classLoader;
-    private ItemRender<Player, Object> itemRender;
+    private PacketItemRender<Player, Object, Object> itemRender;
 
     public ItemRenderLoader(@NotNull Plugin plugin) {
         this.plugin = plugin;
     }
 
     public void init() throws IOException {
-        try {
-            Class.forName(ITEM_RENDER);
+        if (isRenderPresent()) {
             return;
-        } catch (ClassNotFoundException ignored) { }
+        }
 
         final String[] dependency = dependency().split(":");
 
@@ -129,9 +137,9 @@ public class ItemRenderLoader {
     }
 
     @SuppressWarnings("unchecked")
-    public void load() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public void load(boolean inject, boolean register) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         final Class<? extends ItemRender> renderType = Class.forName(ITEM_RENDER, true, getClassLoader()).asSubclass(ItemRender.class);
-        itemRender = (ItemRender<Player, Object>) renderType.getDeclaredConstructor(Plugin.class, boolean.class).newInstance(plugin, true);
+        itemRender = (PacketItemRender<Player, Object, Object>) renderType.getDeclaredConstructor(Plugin.class, boolean.class, boolean.class).newInstance(plugin, inject, register);
     }
 
     @NotNull
@@ -140,7 +148,7 @@ public class ItemRenderLoader {
     }
 
     @NotNull
-    public ItemRender<Player, Object> getItemRender() {
+    public PacketItemRender<Player, Object, Object> getItemRender() {
         return itemRender;
     }
 

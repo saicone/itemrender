@@ -33,13 +33,15 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
     private static final MethodHandle HANDLE = Lookup.getter(CraftItemStack.class, ItemStack.class, "handle");
 
     private final Plugin plugin;
+    private final boolean inject;
 
     public MinecraftItemRender(@NotNull Plugin plugin) {
-        this(plugin, true);
+        this(plugin, true, true);
     }
 
-    public MinecraftItemRender(@NotNull Plugin plugin, boolean register) {
+    public MinecraftItemRender(@NotNull Plugin plugin, boolean inject, boolean register) {
         this.plugin = plugin;
+        this.inject = inject;
         if (register) {
             try {
                 final Field field = Class.forName("com.saicone.item.ItemRenderAPI").getDeclaredField("ITEM_RENDER");
@@ -115,6 +117,9 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onJoin(@NotNull PlayerJoinEvent event) {
+        if (!inject) {
+            return;
+        }
         final CraftPlayer player = (CraftPlayer) event.getPlayer();
         final EntityPlayer serverPlayer = player.getHandle();
         final Channel channel = serverPlayer.playerConnection.networkManager.channel;

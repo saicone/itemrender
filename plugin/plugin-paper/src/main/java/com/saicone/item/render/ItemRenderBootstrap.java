@@ -16,6 +16,10 @@ public class ItemRenderBootstrap implements PluginBootstrap, PluginLoader {
 
     @Override
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
+        if (ItemRenderLoader.isRenderPresent()) {
+            return;
+        }
+
         MavenLibraryResolver resolver = new MavenLibraryResolver();
         resolver.addDependency(new Dependency(new DefaultArtifact(ItemRenderLoader.dependency("group:artifact:classifier:version")), null));
         resolver.addRepository(new RemoteRepository.Builder("jitpack", "default", ItemRenderLoader.repository()).build());
