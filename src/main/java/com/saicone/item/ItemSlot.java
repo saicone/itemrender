@@ -156,6 +156,10 @@ public interface ItemSlot {
         }
     }
 
+    class Window {
+        public static final ItemSlot CURSOR = integer(-1);
+    }
+
     enum Equipment implements ItemSlot {
 
         MAINHAND("HAND"),

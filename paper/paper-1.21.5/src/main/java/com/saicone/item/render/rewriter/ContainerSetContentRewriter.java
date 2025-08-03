@@ -25,15 +25,20 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
     @Override
     public @Nullable ClientboundContainerSetContentPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundContainerSetContentPacket packet) {
         final List<ItemStack> items = packet.items();
-        if (items.isEmpty()) {
-            return packet;
-        }
-        for (int slot = 0; slot < items.size(); slot++) {
-            final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
-            if (result.edited()) {
-                items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
+        if (!items.isEmpty()) {
+            for (int slot = 0; slot < items.size(); slot++) {
+                final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
+                if (result.edited()) {
+                    items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
+                }
             }
         }
+
+        final var result = this.mapper.apply(player, packet.carriedItem(), view, ItemSlot.Window.CURSOR);
+        if (result.edited()) {
+            return new ClientboundContainerSetContentPacket(packet.containerId(), packet.stateId(), items, result.itemOrDefault(ItemStack.EMPTY));
+        }
+
         return packet;
     }
 }

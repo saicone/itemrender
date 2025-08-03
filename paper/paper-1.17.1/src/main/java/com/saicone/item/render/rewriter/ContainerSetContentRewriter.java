@@ -4,6 +4,7 @@ import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.network.PacketItemMapper;
 import com.saicone.item.network.PacketRewriter;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -25,15 +26,20 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
     @Override
     public @Nullable ClientboundContainerSetContentPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundContainerSetContentPacket packet) {
         final List<ItemStack> items = packet.getItems();
-        if (items.isEmpty()) {
-            return packet;
-        }
-        for (int slot = 0; slot < items.size(); slot++) {
-            final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
-            if (result.edited()) {
-                items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
+        if (!items.isEmpty()) {
+            for (int slot = 0; slot < items.size(); slot++) {
+                final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
+                if (result.edited()) {
+                    items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
+                }
             }
         }
+
+        final var result = this.mapper.apply(player, packet.getCarriedItem(), view, ItemSlot.Window.CURSOR);
+        if (result.edited()) {
+            return new ClientboundContainerSetContentPacket(packet.getContainerId(), packet.getStateId(), NonNullList.of(ItemStack.EMPTY, items.toArray(new ItemStack[0])), result.itemOrDefault(ItemStack.EMPTY));
+        }
+
         return packet;
     }
 }
