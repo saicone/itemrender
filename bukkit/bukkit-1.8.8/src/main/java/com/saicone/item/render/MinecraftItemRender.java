@@ -1,9 +1,7 @@
 package com.saicone.item.render;
 
-import com.saicone.item.mapper.AbstractItemMapper;
 import com.saicone.item.network.PacketItemRender;
 import com.saicone.item.render.registry.PacketRewriterRegistry;
-import com.saicone.item.util.Lookup;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,7 +13,6 @@ import net.minecraft.server.v1_8_R3.Packet;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,12 +22,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 
 public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Packet<?>> implements Listener {
-
-    private static final MethodHandle HANDLE = Lookup.getter(CraftItemStack.class, ItemStack.class, "handle");
 
     private final Plugin plugin;
     private final boolean inject;
@@ -74,30 +68,7 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
     protected <ItemA> WrappedItemRender<Player, ItemA, ItemStack> wrapped(@NotNull Class<ItemA> type) {
         final WrappedItemRender<Player, ?, ItemStack> result;
         if (type.equals(org.bukkit.inventory.ItemStack.class)) {
-            result = new WrappedItemRender<Player, org.bukkit.inventory.ItemStack, ItemStack>() {
-                @Override
-                protected @NotNull AbstractItemMapper<Player, ?> parent() {
-                    return MinecraftItemRender.this;
-                }
-
-                @Override
-                public @NotNull Class<org.bukkit.inventory.ItemStack> type() {
-                    return org.bukkit.inventory.ItemStack.class;
-                }
-
-                @Override
-                public @NotNull org.bukkit.inventory.ItemStack wrap(@NotNull ItemStack item) {
-                    return CraftItemStack.asCraftMirror(item);
-                }
-
-                @Override
-                public @NotNull ItemStack unwrap(@NotNull org.bukkit.inventory.ItemStack item) {
-                    if (item instanceof CraftItemStack) {
-                        return Lookup.invoke(HANDLE, item);
-                    }
-                    return CraftItemStack.asNMSCopy(item);
-                }
-            };
+            result = new BukkitItemRender(this);
         } else {
             throw new IllegalArgumentException("Cannot create wrapper for " + type.getName());
         }
