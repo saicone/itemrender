@@ -58,6 +58,9 @@ public interface LabeledList<E> extends List<E> {
 
     void add(int index, @NotNull String key, E element);
 
+    @NotNull
+    String getKey(int index);
+
     boolean removeKey(@NotNull String key);
 
     int indexOf(@NotNull String key, Object o);

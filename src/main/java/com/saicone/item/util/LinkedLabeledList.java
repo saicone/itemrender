@@ -125,6 +125,11 @@ public class LinkedLabeledList<E> extends AbstractSequentialList<E> implements L
     }
 
     @Override
+    public @NotNull String getKey(int index) {
+        return list.get(index).getKey();
+    }
+
+    @Override
     public boolean removeKey(@NotNull String key) {
         return list.removeIf(entry -> entry.getKey().equals(key));
     }

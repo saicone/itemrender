@@ -92,13 +92,24 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         if (mappers == null) {
             return;
         }
+        int index = 0;
         for (ItemMapper<PlayerT, ?> mapper : mappers) {
-            if (mapper.type().equals(this.type())) {
-                ((ItemMapper<PlayerT, ItemT>) mapper).apply(holder);
-            } else {
-                final WrappedItemMapper<PlayerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<PlayerT, Object, ItemT>) mapper;
-                wrappedMapper.wrapAndApply(holder);
+            try {
+                if (mapper.type().equals(this.type())) {
+                    ((ItemMapper<PlayerT, ItemT>) mapper).apply(holder);
+                } else {
+                    final WrappedItemMapper<PlayerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<PlayerT, Object, ItemT>) mapper;
+                    wrappedMapper.wrapAndApply(holder);
+                }
+            } catch (Throwable t) {
+                // Item mapping must be thread-safe
+                if (parent() == null) {
+                    t.printStackTrace();
+                } else {
+                    throw new RuntimeException("The is an error while executing " + mappers.getKey(index) + " on " + this.getClass().getName(), t);
+                }
             }
+            index++;
         }
     }
 
