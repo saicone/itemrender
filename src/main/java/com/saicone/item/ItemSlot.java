@@ -2,7 +2,10 @@ package com.saicone.item;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public interface ItemSlot {
 
@@ -108,20 +111,28 @@ public interface ItemSlot {
 
     enum Equipment implements ItemSlot {
 
-        MAINHAND,
+        MAINHAND("HAND"),
         OFFHAND,
         FEET,
         LEGS,
         CHEST,
         HEAD;
 
+        public static final Equipment[] VALUES = values();
         public static final Equipment[] HAND = new Equipment[] { MAINHAND, OFFHAND };
         public static final Equipment[] ARMOR = new Equipment[] { FEET, LEGS, CHEST, HEAD };
+
+        private final Set<String> aliases = new HashSet<>();
+
+        Equipment(@NotNull String... aliases) {
+            this.aliases.add(name());
+            Collections.addAll(this.aliases, aliases);
+        }
 
         @Override
         public boolean matches(Object object) {
             if (object instanceof Enum<?>) {
-                return ((Enum<?>) object).ordinal() == ordinal() || ((Enum<?>) object).name().replace('_', '\0').equalsIgnoreCase(name());
+                return ((Enum<?>) object).ordinal() == ordinal() || aliases.contains(((Enum<?>) object).name().replace('_', '\0').toUpperCase());
             } else if (object instanceof Number) {
                 return ((Number) object).intValue() == ordinal();
             }
@@ -130,7 +141,7 @@ public interface ItemSlot {
 
         @NotNull
         public static <E extends Enum<E>> Equipment of(@NotNull E e) {
-            return values()[e.ordinal()];
+            return VALUES[e.ordinal()];
         }
     }
 
