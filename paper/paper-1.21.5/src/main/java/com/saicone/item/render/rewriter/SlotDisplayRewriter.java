@@ -16,14 +16,18 @@ public interface SlotDisplayRewriter<PlayerT> {
     @Nullable
     default SlotDisplay rewrite(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper, @NotNull PlayerT player, @NotNull ItemView view, @NotNull SlotDisplay display, @NotNull ItemSlot slot) {
         if (display instanceof SlotDisplay.ItemSlotDisplay item) {
-            final var result = mapper.apply(player, new ItemStack(item.item()), view, slot);
+            final var result = mapper.context(player, new ItemStack(item.item()), view)
+                    .withSlot(slot)
+                    .apply();
             if (result.empty()) {
                 return SlotDisplay.Empty.INSTANCE;
             } else if (result.edited()) {
                 return new SlotDisplay.ItemSlotDisplay(result.item().getItemHolder());
             }
         } else if (display instanceof SlotDisplay.ItemStackSlotDisplay itemStack) {
-            final var result = mapper.apply(player, itemStack.stack(), view, slot);
+            final var result = mapper.context(player, itemStack.stack(), view)
+                    .withSlot(slot)
+                    .apply();
             if (result.empty()) {
                 return SlotDisplay.Empty.INSTANCE;
             } else if (result.edited()) {

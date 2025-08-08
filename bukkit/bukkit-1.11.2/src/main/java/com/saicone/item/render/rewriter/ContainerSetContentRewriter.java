@@ -16,6 +16,7 @@ import java.util.List;
 
 public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutWindowItems> {
 
+    private static final MethodHandle CONTAINER_ID = Lookup.getter(PacketPlayOutWindowItems.class, int.class, "a");
     private static final MethodHandle ITEMS = Lookup.getter(PacketPlayOutWindowItems.class, List.class, "b");
 
     public ContainerSetContentRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
@@ -33,8 +34,11 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
         if (items.isEmpty()) {
             return packet;
         }
+        final int containerId = Lookup.invoke(CONTAINER_ID, packet);
         for (int slot = 0; slot < items.size(); slot++) {
-            final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
+            final var result = this.mapper.context(player, items.get(slot), view)
+                    .withContainer(containerId, ItemSlot.integer(slot))
+                    .apply();
             if (result.edited()) {
                 items.set(slot, result.itemOrDefault(ItemRegistry.empty()));
             }

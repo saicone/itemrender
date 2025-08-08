@@ -1,9 +1,7 @@
 package com.saicone.item.mapper;
 
-import com.saicone.item.ItemFunction;
-import com.saicone.item.ItemHolder;
+import com.saicone.item.ItemContext;
 import com.saicone.item.ItemMapper;
-import com.saicone.item.ItemSlot;
 import com.saicone.item.ItemView;
 import com.saicone.item.util.LabeledList;
 import com.saicone.item.util.LinkedLabeledList;
@@ -17,11 +15,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
 
-    private final ThreadLocal<ItemHolder<PlayerT, ItemT>> holder = ThreadLocal.withInitial(ItemHolder::new);
+    private final ThreadLocal<ItemContext<PlayerT, ItemT>> context = ThreadLocal.withInitial(() -> new ItemContext<>(this));
     private final Map<ItemView, LabeledList<ItemMapper<PlayerT, ?>>> mappers = new HashMap<>() {
         @Override
         public LabeledList<ItemMapper<PlayerT, ?>> put(ItemView key, LabeledList<ItemMapper<PlayerT, ?>> value) {
@@ -84,11 +82,11 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
 
     @Override
     @SuppressWarnings("unchecked")
-    public void apply(@NotNull ItemHolder<PlayerT, ItemT> holder) {
+    public void apply(@NotNull ItemContext<PlayerT, ItemT> context) {
         if (this.mappers.isEmpty()) {
             return;
         }
-        final LabeledList<ItemMapper<PlayerT, ?>> mappers = this.mappers.get(holder.view());
+        final LabeledList<ItemMapper<PlayerT, ?>> mappers = this.mappers.get(context.view());
         if (mappers == null) {
             return;
         }
@@ -96,17 +94,18 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         for (ItemMapper<PlayerT, ?> mapper : mappers) {
             try {
                 if (mapper.type().equals(this.type())) {
-                    ((ItemMapper<PlayerT, ItemT>) mapper).apply(holder);
+                    ((ItemMapper<PlayerT, ItemT>) mapper).apply(context);
                 } else {
                     final WrappedItemMapper<PlayerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<PlayerT, Object, ItemT>) mapper;
-                    wrappedMapper.wrapAndApply(holder);
+                    wrappedMapper.wrapAndApply(context);
                 }
             } catch (Throwable t) {
+                final RuntimeException exception = new RuntimeException("There is an error while executing " + mappers.getKey(index) + " on " + this.getClass().getName(), t);
                 // Item mapping must be thread-safe
                 if (parent() == null) {
-                    t.printStackTrace();
+                    exception.printStackTrace();
                 } else {
-                    throw new RuntimeException("The is an error while executing " + mappers.getKey(index) + " on " + this.getClass().getName(), t);
+                    throw exception;
                 }
             }
             index++;
@@ -114,20 +113,25 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
     }
 
     @Override
-    public @NotNull ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot) {
-        final ItemHolder<PlayerT, ItemT> holder = holder(player, item, view, slot);
-        apply(holder);
-        return holder;
+    public @NotNull ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
+        final ItemContext<PlayerT, ItemT> context = this.context.get();
+        context.rotate(player, item, view);
+        return context;
     }
 
     @NotNull
-    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull BiFunction<ItemT, ItemSlot, ItemT> function) {
-        return simple(key, function);
-    }
+    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull Consumer<ItemContext<PlayerT, ItemT>> consumer) {
+        return new SimpleItemMapper<>(type(), consumer) {
+            @Override
+            protected @NotNull AbstractItemMapper<PlayerT, ItemT> parent() {
+                return AbstractItemMapper.this;
+            }
 
-    @NotNull
-    public SimpleItemMapper<PlayerT, ItemT> register(@NotNull String key, @NotNull ItemFunction<PlayerT, ItemT> function) {
-        return simple(key, function);
+            @Override
+            public @NotNull String key() {
+                return key;
+            }
+        };
     }
 
     @NotNull
@@ -199,31 +203,5 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         if (list.isEmpty()) {
             mappers.remove(view);
         }
-    }
-
-    @NotNull
-    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull BiFunction<ItemT, ItemSlot, ItemT> function) {
-        return simple(key, (player, item, slot) -> function.apply(item, slot));
-    }
-
-    @NotNull
-    protected SimpleItemMapper<PlayerT, ItemT> simple(@NotNull String key, @NotNull ItemFunction<PlayerT, ItemT> function) {
-        return new SimpleItemMapper<>(type(), function) {
-            @Override
-            protected @NotNull AbstractItemMapper<PlayerT, ItemT> parent() {
-                return AbstractItemMapper.this;
-            }
-
-            @Override
-            public @NotNull String key() {
-                return key;
-            }
-        };
-    }
-
-    protected ItemHolder<PlayerT, ItemT> holder(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot) {
-        final ItemHolder<PlayerT, ItemT> holder = this.holder.get();
-        holder.reset(player, item, view, slot);
-        return holder;
     }
 }

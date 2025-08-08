@@ -23,6 +23,7 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
             ItemSlot.Equipment.HEAD
     };
 
+    private static final MethodHandle ENTITY = Lookup.getter(PacketPlayOutEntityEquipment.class, int.class, "a");
     private static final MethodHandle SLOT = Lookup.getter(PacketPlayOutEntityEquipment.class, int.class, "b");
     private static final MethodHandle ITEM = Lookup.getter(PacketPlayOutEntityEquipment.class, ItemStack.class, "c");
     private static final MethodHandle SET_ITEM = Lookup.setter(PacketPlayOutEntityEquipment.class, ItemStack.class, "c");
@@ -38,7 +39,10 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
 
     @Override
     public @Nullable PacketPlayOutEntityEquipment rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutEntityEquipment packet) {
-        final var result = this.mapper.apply(player, Lookup.invoke(ITEM, packet), view, EQUIPMENT[Lookup.<Integer>invoke(SLOT, packet)]);
+        final var result = this.mapper.context(player, Lookup.invoke(ITEM, packet), view)
+                .withEntity(Lookup.<Integer>invoke(ENTITY, packet))
+                .withSlot(EQUIPMENT[Lookup.<Integer>invoke(SLOT, packet)])
+                .apply();
         if (result.edited()) {
             Lookup.invoke(SET_ITEM, packet, result.itemOrDefault(ItemRegistry.empty()));
         }

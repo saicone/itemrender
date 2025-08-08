@@ -28,20 +28,43 @@ Do you ever want to implement updatable items? This is the API are you looking f
 ItemRender API offers easy-to-use methods to edit client-side items.
 
 ```java
-// Edit only item
-ItemRenderAPI.bukkit().register("myedit:id", (item, slot) -> {
-    // Edit the item...
+// A simple edit that parse placeholders on item name and lore
+ItemRenderAPI.bukkit().register("myedit:placeholders", context -> {
+    ItemStack item = context.item();
+    if (item != null && item.hasItemMeta()) {
+        ItemMeta meta = item.getItemMeta();
+        boolean modified = false;
 
-    // If you want to remove the item information at all, just return null
-    return item;
-}).when(ItemView.WINDOW, ItemView.MERCHANT) // Edit client-side inventory items
-  .check(item -> item != null && item.hasItemMeta()); // Condition to apply an edit
+        String name = meta.getDisplayName();
+        if (name != null) {
+            name = PlaceholderAPI.setPlaceholders(context.player(), name);
+            modified = true;
+        }
 
-// Edit with player
-ItemRenderAPI.bukkit().register("myedit:id", (player, item, slot) -> {
-    // Edit the item with player that are viewing it
-    
-    return item;
-}).when(ItemView.EQUIPMENT, ItemView.METADATA) // Edit client-side items that are rendered by other players
-  .check((player, item) -> player.hasPermission("see.items.different")); // Condition to apply an edit, also compatible with player argument
+        List<String> lore = meta.getLore();
+        if (lore != null && !lore.isEmpty()) {
+            for (int i = 0; i < lore.size(); i++) {
+                lore.set(i, PlaceholderAPI.setPlaceholders(context.player(), lore.get(i)));
+            }
+            modified = true;
+        }
+
+        if (modified) {
+            item.setItemMeta(meta);
+            context.item(item);
+        }
+    }
+}).when(ItemView.WINDOW, ItemView.MERCHANT);
+
+// An edit that doesn't show player armor if the player has invisibility effect and 'invisible.armor' permission
+ItemRenderAPI.bukkit().register("myedit:invisibility", context -> {
+    for (Player player : Bukkit.getOnlinePlayers()) {
+       if (player.getEntityId() == context.entityId()) {
+           if (player.hasPotionEffect(PotionEffectType.INVISIBILITY) && player.hasPermission("invisible.armor")) {
+               context.item(null);
+           }
+           break;
+       }
+    }
+}).when(ItemView.EQUIPMENT);
 ```

@@ -24,6 +24,7 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     //
     // Can be optimized? Yes. But will require a more complex reflection usage by looking fields as ParameterizedType
 
+    private static final MethodHandle ID = Lookup.getter(PacketPlayOutEntityMetadata.class, int.class, "a");
     private static final MethodHandle PACKED_ITEMS = Lookup.getter(PacketPlayOutEntityMetadata.class, List.class, "b");
 
     public SetEntityDataRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
@@ -41,10 +42,13 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         if (packedItems == null) {
             return packet;
         }
+        final int entityId = Lookup.invoke(ID, packet);
         for (int i = 0; i < packedItems.size(); i++) {
             final DataWatcher.Item<?> data = packedItems.get(i);
             if (data.a().b() == DataWatcherRegistry.g) {
-                final var result = this.mapper.apply(player, (ItemStack) data.b(), view, null);
+                final var result = this.mapper.context(player, (ItemStack) data.b(), view)
+                        .withEntity(entityId)
+                        .apply();
                 if (result.edited()) {
                     final DataWatcher.Item<?> newData = new DataWatcher.Item(data.a(), result.itemOrDefault(ItemRegistry.empty()));
                     newData.a(data.c());

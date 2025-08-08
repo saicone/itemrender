@@ -1,6 +1,6 @@
 package com.saicone.item.render;
 
-import com.saicone.item.ItemHolder;
+import com.saicone.item.ItemContext;
 import com.saicone.item.ItemRender;
 import com.saicone.item.mapper.WrappedItemMapper;
 import org.jetbrains.annotations.NotNull;
@@ -13,11 +13,13 @@ public abstract class WrappedItemRender<PlayerT, ItemA, ItemB> extends ItemRende
     }
 
     @Override
-    public void wrapAndApply(@NotNull ItemHolder<PlayerT, ItemB> holder) {
-        final ItemA item = holder.item() == null ? null : wrap(holder.item());
-        final var wrapped = holder(holder.player(), item, holder.view(), holder.slot());
+    public void wrapAndApply(@NotNull ItemContext<PlayerT, ItemB> context) {
+        final ItemA item = context.item() == null ? null : wrap(context.item());
+        final var wrapped = context(context.player(), item, context.view()).with(context.slot(), context.containerId(), context.entityId(), context.recipeId());
         apply(wrapped);
-        holder.update(wrapped.item() == null ? null : unwrap(wrapped.item()), wrapped.edited(), wrapped.cancel());
+        if (wrapped.edited()) {
+            context.update(wrapped.item() == null ? null : unwrap(wrapped.item()), wrapped.edited(), wrapped.cancel());
+        }
     }
 
     @Override

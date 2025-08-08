@@ -18,6 +18,7 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
     private static final int ITEM_STACK = 5;
 
+    private static final MethodHandle ID = Lookup.getter(PacketPlayOutEntityMetadata.class, int.class, "a");
     private static final MethodHandle PACKED_ITEMS = Lookup.getter(PacketPlayOutEntityMetadata.class, List.class, "b");
 
     public SetEntityDataRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
@@ -35,9 +36,12 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         if (packedItems == null) {
             return packet;
         }
+        final int entityId = Lookup.invoke(ID, packet);
         for (final DataWatcher.WatchableObject data : packedItems) {
             if (data.c() == ITEM_STACK) {
-                final var result = this.mapper.apply(player, (ItemStack) data.b(), view, null);
+                final var result = this.mapper.context(player, (ItemStack) data.b(), view)
+                        .withEntity(entityId)
+                        .apply();
                 if (result.edited()) {
                     data.a(result.itemOrDefault(ItemRegistry.empty()));
                 }

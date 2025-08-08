@@ -61,7 +61,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         }
         for (int i = 0; i < recipes.size(); i++) {
             final RecipeHolder<?> holder = recipes.get(i);
-            final Recipe<?> recipe = apply(player, view, holder.value());
+            final Recipe<?> recipe = apply(player, view, holder.id(), holder.value());
             if (recipe != null) {
                 recipes.set(i, new RecipeHolder<>(holder.id(), (Recipe<?>) recipe));
             }
@@ -71,13 +71,15 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
 
     @Nullable
-    protected Recipe<?> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Recipe<?> recipe) {
+    protected Recipe<?> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull Recipe<?> recipe) {
         if (recipe instanceof AbstractCookingRecipe cooking) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.COOKING_RESULT);
+            final var result = this.mapper.context(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view)
+                    .withRecipe(recipeId, ItemSlot.Recipe.COOKING_RESULT)
+                    .apply();
 
             final Ingredient ingredient = Lookup.invoke(COOKING_INGREDIENT, cooking);
 
-            Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
+            Ingredient applied = apply(player, view, recipeId, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
             if (applied == null) {
                 if (!result.edited()) {
                     return null;
@@ -95,9 +97,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
                 return new SmokingRecipe(cooking.getGroup(), cooking.category(), applied, result.itemOrDefault(ItemStack.EMPTY), cooking.getExperience(), cooking.getCookingTime());
             }
         } else if (recipe instanceof ShapedRecipe shaped) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.SHAPED_RESULT);
+            final var result = this.mapper.context(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view)
+                    .withRecipe(recipeId, ItemSlot.Recipe.SHAPED_RESULT)
+                    .apply();
 
-            NonNullList<Ingredient> ingredients = apply(player, view, shaped.getIngredients(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
+            NonNullList<Ingredient> ingredients = apply(player, view, recipeId, shaped.getIngredients(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -107,9 +111,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
             return new ShapedRecipe(shaped.getGroup(), shaped.category(), shaped.getWidth(), shaped.getHeight(), ingredients, result.itemOrDefault(ItemStack.EMPTY), shaped.showNotification());
         } else if (recipe instanceof ShapelessRecipe shapeless) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.SHAPELESS_RESULT);
+            final var result = this.mapper.context(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view)
+                    .withRecipe(recipeId, ItemSlot.Recipe.SHAPELESS_RESULT)
+                    .apply();
 
-            NonNullList<Ingredient> ingredients = apply(player, view, shapeless.getIngredients(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
+            NonNullList<Ingredient> ingredients = apply(player, view, recipeId, shapeless.getIngredients(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -119,11 +125,13 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
             return new ShapelessRecipe(shapeless.getGroup(), shapeless.category(), result.itemOrDefault(ItemStack.EMPTY), ingredients);
         } else if (recipe instanceof SmithingTransformRecipe transform) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.TRANSFORM_RESULT);
+            final var result = this.mapper.context(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view)
+                    .withRecipe(recipeId, ItemSlot.Recipe.TRANSFORM_RESULT)
+                    .apply();
 
-            Ingredient template = apply(player, view, Lookup.invoke(TRANSFORM_TEMPLATE, transform), ItemSlot.Recipe.TRANSFORM_TEMPLATE);
-            Ingredient base = apply(player, view, Lookup.invoke(TRANSFORM_BASE, transform), ItemSlot.Recipe.TRANSFORM_BASE);
-            Ingredient addition = apply(player, view, Lookup.invoke(TRANSFORM_ADDITION, transform), ItemSlot.Recipe.TRANSFORM_ADDITION);
+            Ingredient template = apply(player, view, recipeId, Lookup.invoke(TRANSFORM_TEMPLATE, transform), ItemSlot.Recipe.TRANSFORM_TEMPLATE);
+            Ingredient base = apply(player, view, recipeId, Lookup.invoke(TRANSFORM_BASE, transform), ItemSlot.Recipe.TRANSFORM_BASE);
+            Ingredient addition = apply(player, view, recipeId, Lookup.invoke(TRANSFORM_ADDITION, transform), ItemSlot.Recipe.TRANSFORM_ADDITION);
 
             if (!result.edited() && template == null && base == null && addition == null) {
                 return null;
@@ -141,9 +149,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
             return new SmithingTransformRecipe(template, base, addition, result.itemOrDefault(ItemStack.EMPTY));
         } else if (recipe instanceof SmithingTrimRecipe trim) {
-            Ingredient template = apply(player, view, Lookup.invoke(TRIM_TEMPLATE, trim), ItemSlot.Recipe.TRIM_TEMPLATE);
-            Ingredient base = apply(player, view, Lookup.invoke(TRIM_BASE, trim), ItemSlot.Recipe.TRIM_BASE);
-            Ingredient addition = apply(player, view, Lookup.invoke(TRIM_ADDITION, trim), ItemSlot.Recipe.TRIM_ADDITION);
+            Ingredient template = apply(player, view, recipeId, Lookup.invoke(TRIM_TEMPLATE, trim), ItemSlot.Recipe.TRIM_TEMPLATE);
+            Ingredient base = apply(player, view, recipeId, Lookup.invoke(TRIM_BASE, trim), ItemSlot.Recipe.TRIM_BASE);
+            Ingredient addition = apply(player, view, recipeId, Lookup.invoke(TRIM_ADDITION, trim), ItemSlot.Recipe.TRIM_ADDITION);
 
             if (template == null && base == null && addition == null) {
                 return null;
@@ -161,11 +169,13 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
             return new SmithingTrimRecipe(template, base, addition);
         } else if (recipe instanceof StonecutterRecipe stonecutter) {
-            final var result = this.mapper.apply(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view, ItemSlot.Recipe.STONECUTTER_RESULT);
+            final var result = this.mapper.context(player, recipe.getResultItem(CraftRegistry.getMinecraftRegistry()), view)
+                    .withRecipe(recipeId, ItemSlot.Recipe.STONECUTTER_RESULT)
+                    .apply();
 
             final Ingredient ingredient = Lookup.invoke(SINGLE_INGREDIENT, stonecutter);
 
-            Ingredient applied = apply(player, view, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+            Ingredient applied = apply(player, view, recipeId, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
             if (applied == null) {
                 if (!result.edited()) {
                     return null;
@@ -179,7 +189,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected NonNullList<Ingredient> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull NonNullList<Ingredient> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
+    protected NonNullList<Ingredient> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull NonNullList<Ingredient> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
         if (ingredients.isEmpty()) {
             return null;
         }
@@ -187,7 +197,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         boolean edited = false;
         for (int i = 0; i < ingredients.size(); i++) {
             final Ingredient ingredient = ingredients.get(i);
-            final Ingredient result = apply(player, view, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
+            final Ingredient result = apply(player, view, recipeId, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
             if (result == null) {
                 list.add(ingredient);
             } else {
@@ -203,7 +213,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Ingredient ingredient, @NotNull ItemSlot slot) {
+    protected Ingredient apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull Ingredient ingredient, @NotNull ItemSlot slot) {
         if (ingredient == Ingredient.EMPTY || ingredient.getItems().length == 0) {
             return null;
         }
@@ -213,7 +223,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             if (item == null) {
                 continue;
             }
-            final var result = this.mapper.apply(player, item, view, slot);
+            final var result = this.mapper.context(player, item, view)
+                    .withRecipe(recipeId, slot)
+                    .apply();
             if (result.edited()) {
                 items.add(new Ingredient.ItemValue(result.itemOrDefault(ItemStack.EMPTY)));
                 edited = true;

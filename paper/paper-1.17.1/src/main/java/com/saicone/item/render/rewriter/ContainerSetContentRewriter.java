@@ -28,14 +28,18 @@ public class ContainerSetContentRewriter<PlayerT> extends PacketRewriter<PlayerT
         final List<ItemStack> items = packet.getItems();
         if (!items.isEmpty()) {
             for (int slot = 0; slot < items.size(); slot++) {
-                final var result = this.mapper.apply(player, items.get(slot), view, ItemSlot.integer(slot));
+                final var result = this.mapper.context(player, items.get(slot), view)
+                        .withContainer(packet.getContainerId(), ItemSlot.integer(slot))
+                        .apply();
                 if (result.edited()) {
                     items.set(slot, result.itemOrDefault(ItemStack.EMPTY));
                 }
             }
         }
 
-        final var result = this.mapper.apply(player, packet.getCarriedItem(), view, ItemSlot.Window.CURSOR);
+        final var result = this.mapper.context(player, packet.getCarriedItem(), view)
+                .withContainer(packet.getContainerId(), ItemSlot.Window.CURSOR)
+                .apply();
         if (result.edited()) {
             return new ClientboundContainerSetContentPacket(packet.getContainerId(), packet.getStateId(), NonNullList.of(ItemStack.EMPTY, items.toArray(new ItemStack[0])), result.itemOrDefault(ItemStack.EMPTY));
         }

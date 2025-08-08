@@ -31,9 +31,15 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
         final MerchantOffers offers = new MerchantOffers();
         boolean edited = false;
         for (MerchantOffer offer : packet.getOffers()) {
-            final var costA = this.mapper.apply(player, offer.getBaseCostA(), view, ItemSlot.Merchant.COST_A);
-            final var costB = this.mapper.apply(player, offer.getCostB(), view, ItemSlot.Merchant.COST_B);
-            final var result = this.mapper.apply(player, offer.getResult(), view, ItemSlot.Merchant.RESULT);
+            final var costA = this.mapper.context(player, offer.getBaseCostA(), view)
+                    .withContainer(packet.getContainerId(), ItemSlot.Merchant.COST_A)
+                    .apply();
+            final var costB = this.mapper.context(player, offer.getCostB(), view)
+                    .withContainer(packet.getContainerId(), ItemSlot.Merchant.COST_B)
+                    .apply();
+            final var result = this.mapper.context(player, offer.getResult(), view)
+                    .withContainer(packet.getContainerId(), ItemSlot.Merchant.RESULT)
+                    .apply();
 
             if (!costA.edited() && !costB.edited() && !result.edited()) {
                 offers.add(offer);

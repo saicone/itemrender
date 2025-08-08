@@ -21,7 +21,8 @@ public interface ComponentRewriter<PlayerT> {
         final HoverEvent event = mutable.getStyle().getHoverEvent();
         if (event != null && event.action() == HoverEvent.Action.SHOW_ITEM) {
             final HoverEvent.ShowItem showItem = (HoverEvent.ShowItem) event;
-            final var result = mapper.apply(player, showItem.item(), view, null);
+            final var result = mapper.context(player, showItem.item(), view)
+                    .apply();
             if (result.empty()) {
                 mutable.setStyle(mutable.getStyle().withHoverEvent(null));
                 edited = true;

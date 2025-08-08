@@ -28,7 +28,8 @@ public interface ComponentRewriter<PlayerT, ItemT> {
         if (event != null) {
             final ChatHoverable.c info = event.a(ChatHoverable.EnumHoverAction.SHOW_ITEM);
             if (info != null) {
-                final var result = mapper.apply(player, (ItemT) ItemStackInfo.getItemStack(info), view, null);
+                final var result = mapper.context(player, (ItemT) ItemStackInfo.getItemStack(info), view)
+                        .apply();
                 if (result.empty()) {
                     mutable.setChatModifier(mutable.getChatModifier().setChatHoverable(null));
                     edited = true;

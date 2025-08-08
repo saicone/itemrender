@@ -29,7 +29,9 @@ public class SetEntityDataRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         for (int i = 0; i < packedItems.size(); i++) {
             final SynchedEntityData.DataValue<?> dataValue = packedItems.get(i);
             if (dataValue.serializer() == EntityDataSerializers.ITEM_STACK) {
-                final var result = this.mapper.apply(player, (ItemStack) dataValue.value(), view, null);
+                final var result = this.mapper.context(player, (ItemStack) dataValue.value(), view)
+                        .withEntity(packet.id())
+                        .apply();
                 if (result.edited()) {
                     packedItems.set(i, new SynchedEntityData.DataValue<>(dataValue.id(), EntityDataSerializers.ITEM_STACK, result.itemOrDefault(ItemStack.EMPTY)));
                 }

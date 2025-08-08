@@ -25,7 +25,8 @@ public interface ComponentRewriter<PlayerT, ItemT> {
         if (event != null && event.a() == ChatHoverable.EnumHoverAction.SHOW_ITEM) {
             try {
                 final ItemStack item = ItemStack.a(MojangsonParser.parse(event.b().getText()));
-                final var result = mapper.apply(player, (ItemT) item, view, null);
+                final var result = mapper.context(player, (ItemT) item, view)
+                        .apply();
                 if (result.empty()) {
                     component.setChatModifier(component.getChatModifier().setChatHoverable(null));
                     edited = true;

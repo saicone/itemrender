@@ -61,11 +61,13 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     protected IRecipe apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull IRecipe recipe) {
         if (recipe instanceof FurnaceRecipe) {
             final FurnaceRecipe furnace = (FurnaceRecipe) recipe;
-            final var result = this.mapper.apply(player, recipe.d(), view, ItemSlot.Recipe.COOKING_RESULT);
+            final var result = this.mapper.context(player, recipe.d(), view)
+                    .withRecipe(furnace.getKey(), ItemSlot.Recipe.COOKING_RESULT)
+                    .apply();
 
             final RecipeItemStack ingredient = Lookup.invoke(FURNACE_INGREDIENT, furnace);
 
-            RecipeItemStack applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
+            RecipeItemStack applied = apply(player, view, furnace.getKey(), ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
             if (applied == null) {
                 if (!result.edited()) {
                     return null;
@@ -76,9 +78,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             return new FurnaceRecipe(furnace.getKey(), Lookup.invoke(FURNACE_GROUP, furnace), applied, result.itemOrDefault(ItemRegistry.empty()), furnace.g(), furnace.h());
         } else if (recipe instanceof ShapedRecipes) {
             final ShapedRecipes shaped = (ShapedRecipes) recipe;
-            final var result = this.mapper.apply(player, recipe.d(), view, ItemSlot.Recipe.SHAPED_RESULT);
+            final var result = this.mapper.context(player, recipe.d(), view)
+                    .withRecipe(shaped.getKey(), ItemSlot.Recipe.SHAPED_RESULT)
+                    .apply();
 
-            NonNullList<RecipeItemStack> ingredients = apply(player, view, shaped.e(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
+            NonNullList<RecipeItemStack> ingredients = apply(player, view, shaped.getKey(), shaped.e(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -89,9 +93,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             return new ShapedRecipes(shaped.getKey(), Lookup.invoke(SHAPED_GROUP, shaped), shaped.g(), shaped.h(), ingredients, result.itemOrDefault(ItemRegistry.empty()));
         } else if (recipe instanceof ShapelessRecipes) {
             final ShapelessRecipes shapeless = (ShapelessRecipes) recipe;
-            final var result = this.mapper.apply(player, recipe.d(), view, ItemSlot.Recipe.SHAPELESS_RESULT);
+            final var result = this.mapper.context(player, recipe.d(), view)
+                    .withRecipe(shapeless.getKey(), ItemSlot.Recipe.SHAPELESS_RESULT)
+                    .apply();
 
-            NonNullList<RecipeItemStack> ingredients = apply(player, view, shapeless.e(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
+            NonNullList<RecipeItemStack> ingredients = apply(player, view, shapeless.getKey(), shapeless.e(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -105,7 +111,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected NonNullList<RecipeItemStack> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull NonNullList<RecipeItemStack> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
+    protected NonNullList<RecipeItemStack> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull NonNullList<RecipeItemStack> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
         if (ingredients.isEmpty()) {
             return null;
         }
@@ -113,7 +119,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         boolean edited = false;
         for (int i = 0; i < ingredients.size(); i++) {
             final RecipeItemStack ingredient = ingredients.get(i);
-            final RecipeItemStack result = apply(player, view, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
+            final RecipeItemStack result = apply(player, view, recipeId, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
             if (result == null) {
                 list.add(ingredient);
             } else {
@@ -129,7 +135,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected RecipeItemStack apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull RecipeItemStack ingredient, @NotNull ItemSlot slot) {
+    protected RecipeItemStack apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull RecipeItemStack ingredient, @NotNull ItemSlot slot) {
         if (ingredient == RecipeItemStack.a) { // empty item
             return null;
         }
@@ -140,7 +146,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             if (item == null) {
                 continue;
             }
-            final var result = this.mapper.apply(player, item, view, slot);
+            final var result = this.mapper.context(player, item, view)
+                    .withRecipe(recipeId, slot)
+                    .apply();
             if (result.edited()) {
                 items.add(new RecipeItemStack.StackProvider(result.itemOrDefault(ItemRegistry.empty())));
                 edited = true;

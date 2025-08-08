@@ -29,7 +29,10 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
         final List<Pair<EquipmentSlot, net.minecraft.world.item.ItemStack>> slots = packet.getSlots();
         for (int i = 0; i < slots.size(); i++) {
             final Pair<EquipmentSlot, net.minecraft.world.item.ItemStack> pair = slots.get(i);
-            final var result = this.mapper.apply(player, pair.getSecond(), view, ItemSlot.Equipment.of(pair.getFirst()));
+            final var result = this.mapper.context(player, pair.getSecond(), view)
+                    .withEntity(packet.getEntity())
+                    .withSlot(ItemSlot.Equipment.of(pair.getFirst()))
+                    .apply();
             if (result.edited()) {
                 slots.set(i, new Pair<>(pair.getFirst(), result.itemOrDefault(ItemStack.EMPTY)));
             }

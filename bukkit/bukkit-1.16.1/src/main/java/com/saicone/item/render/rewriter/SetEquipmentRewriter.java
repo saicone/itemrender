@@ -18,6 +18,7 @@ import java.util.List;
 
 public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutEntityEquipment> {
 
+    private static final MethodHandle ENTITY = Lookup.getter(PacketPlayOutEntityEquipment.class, int.class, "a");
     private static final MethodHandle SLOTS = Lookup.getter(PacketPlayOutEntityEquipment.class, List.class, "b");
 
     public SetEquipmentRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
@@ -32,9 +33,13 @@ public class SetEquipmentRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemS
     @Override
     public @Nullable PacketPlayOutEntityEquipment rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutEntityEquipment packet) {
         final List<Pair<EnumItemSlot, ItemStack>> slots = Lookup.invoke(SLOTS, packet);
+        final int entityId = Lookup.invoke(ENTITY, packet);
         for (int i = 0; i < slots.size(); i++) {
             final Pair<EnumItemSlot, ItemStack> pair = slots.get(i);
-            final var result = this.mapper.apply(player, pair.getSecond(), view, ItemSlot.Equipment.of(pair.getFirst()));
+            final var result = this.mapper.context(player, pair.getSecond(), view)
+                    .withEntity(entityId)
+                    .withSlot(ItemSlot.Equipment.of(pair.getFirst()))
+                    .apply();
             if (result.edited()) {
                 slots.set(i, new Pair<>(pair.getFirst(), result.itemOrDefault(ItemRegistry.empty())));
             }

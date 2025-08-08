@@ -80,7 +80,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             boolean itemsEdited = false;
             final Set<Holder<Item>> items = new HashSet<>();
             for (Holder<Item> item : propertyItems) {
-                final var result = this.mapper.apply(player, new ItemStack(item), view, slot);
+                final var result = this.mapper.context(player, new ItemStack(item), view)
+                        .withSlot(slot)
+                        .apply();
                 if (result.empty()) {
                     items.add(ItemStack.EMPTY.getItemHolder());
                     itemsEdited = true;

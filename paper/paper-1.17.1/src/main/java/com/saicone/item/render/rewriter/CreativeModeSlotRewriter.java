@@ -22,7 +22,9 @@ public class CreativeModeSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, I
 
     @Override
     public @Nullable ServerboundSetCreativeModeSlotPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ServerboundSetCreativeModeSlotPacket packet) {
-        final var result = this.mapper.apply(player, packet.getItem(), view, ItemSlot.integer(packet.getSlotNum()));
+        final var result = this.mapper.context(player, packet.getItem(), view)
+                .withSlot(ItemSlot.integer(packet.getSlotNum()))
+                .apply();
         if (result.edited()) {
             return new ServerboundSetCreativeModeSlotPacket(packet.getSlotNum(), result.itemOrDefault(ItemStack.EMPTY));
         }

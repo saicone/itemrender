@@ -15,9 +15,9 @@ public interface ItemMapper<PlayerT, ItemT> {
 
     boolean allow(@NotNull ItemView view);
 
-    void apply(@NotNull ItemHolder<PlayerT, ItemT> holder);
+    void apply(@NotNull ItemContext<PlayerT, ItemT> context);
 
     @NotNull
-    ItemHolder<PlayerT, ItemT> apply(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view, @Nullable ItemSlot slot);
+    ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view);
 
 }

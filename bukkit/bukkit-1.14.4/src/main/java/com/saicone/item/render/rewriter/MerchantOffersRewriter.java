@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 
 public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutOpenWindowMerchant> {
 
+    private static final MethodHandle CONTAINER_ID = Lookup.getter(PacketPlayOutOpenWindowMerchant.class, int.class, "a");
     private static final MethodHandle OFFERS = Lookup.getter(PacketPlayOutOpenWindowMerchant.class, MerchantRecipeList.class, "b");
     private static final MethodHandle SET_OFFERS = Lookup.setter(PacketPlayOutOpenWindowMerchant.class, MerchantRecipeList.class, "b");
 
@@ -36,10 +37,17 @@ public class MerchantOffersRewriter<PlayerT> extends PacketRewriter<PlayerT, Ite
     public @Nullable PacketPlayOutOpenWindowMerchant rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutOpenWindowMerchant packet) {
         final MerchantRecipeList offers = new MerchantRecipeList();
         boolean edited = false;
+        final int containerId = Lookup.invoke(CONTAINER_ID, packet);
         for (MerchantRecipe offer : (MerchantRecipeList) Lookup.invoke(OFFERS, packet)) {
-            final var costA = this.mapper.apply(player, offer.a(), view, ItemSlot.Merchant.COST_A);
-            final var costB = this.mapper.apply(player, offer.getBuyItem2(), view, ItemSlot.Merchant.COST_B);
-            final var result = this.mapper.apply(player, offer.getSellingItem(), view, ItemSlot.Merchant.RESULT);
+            final var costA = this.mapper.context(player, offer.a(), view)
+                    .withContainer(containerId, ItemSlot.Merchant.COST_A)
+                    .apply();
+            final var costB = this.mapper.context(player, offer.getBuyItem2(), view)
+                    .withContainer(containerId, ItemSlot.Merchant.COST_B)
+                    .apply();
+            final var result = this.mapper.context(player, offer.getSellingItem(), view)
+                    .withContainer(containerId, ItemSlot.Merchant.RESULT)
+                    .apply();
             if (!costA.edited() && !costB.edited() && !result.edited()) {
                 offers.add(offer);
                 continue;

@@ -31,8 +31,11 @@ public class ContainerSetSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, I
 
     @Override
     public @Nullable PacketPlayOutSetSlot rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutSetSlot packet) {
+        final int containerId = Lookup.invoke(CONTAINER_ID, packet);
         final int slot = Lookup.invoke(SLOT, packet);
-        final var result = this.mapper.apply(player, Lookup.invoke(ITEM, packet), view, Lookup.<Integer>invoke(CONTAINER_ID, packet) == -1 ? ItemSlot.Window.CURSOR : ItemSlot.integer(slot));
+        final var result = this.mapper.context(player, Lookup.invoke(ITEM, packet), view)
+                .withContainer(containerId, containerId == -1 ? ItemSlot.Window.CURSOR : ItemSlot.integer(slot))
+                .apply();
         if (result.edited()) {
             Lookup.invoke(SET_ITEM, packet, result.itemOrDefault(ItemRegistry.empty()));
         }

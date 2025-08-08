@@ -22,7 +22,9 @@ public class SetCursorItemRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
 
     @Override
     public @Nullable ClientboundSetCursorItemPacket rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull ClientboundSetCursorItemPacket packet) {
-        final var result = this.mapper.apply(player, packet.contents(), view, ItemSlot.Window.CURSOR);
+        final var result = this.mapper.context(player, packet.contents(), view)
+                .withContainer(-1, ItemSlot.Window.CURSOR)
+                .apply();
         if (result.edited()) {
             return new ClientboundSetCursorItemPacket(result.itemOrDefault(ItemStack.EMPTY));
         }

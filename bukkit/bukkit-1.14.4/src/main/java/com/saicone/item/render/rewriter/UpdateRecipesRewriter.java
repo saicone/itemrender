@@ -69,11 +69,13 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     protected IRecipe<?> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull IRecipe<?> recipe) {
         if (recipe instanceof RecipeCooking) {
             final RecipeCooking cooking = (RecipeCooking) recipe;
-            final var result = this.mapper.apply(player, recipe.c(), view, ItemSlot.Recipe.COOKING_RESULT);
+            final var result = this.mapper.context(player, recipe.c(), view)
+                    .withRecipe(cooking.getKey(), ItemSlot.Recipe.COOKING_RESULT)
+                    .apply();
 
             final RecipeItemStack ingredient = Lookup.invoke(COOKING_INGREDIENT, cooking);
 
-            RecipeItemStack applied = apply(player, view, ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
+            RecipeItemStack applied = apply(player, view, cooking.getKey(), ingredient, ItemSlot.Recipe.COOKING_INGREDIENT);
             if (applied == null) {
                 if (!result.edited()) {
                     return null;
@@ -93,9 +95,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             }
         } else if (recipe instanceof ShapedRecipes) {
             final ShapedRecipes shaped = (ShapedRecipes) recipe;
-            final var result = this.mapper.apply(player, recipe.c(), view, ItemSlot.Recipe.SHAPED_RESULT);
+            final var result = this.mapper.context(player, recipe.c(), view)
+                    .withRecipe(shaped.getKey(), ItemSlot.Recipe.SHAPED_RESULT)
+                    .apply();
 
-            NonNullList<RecipeItemStack> ingredients = apply(player, view, shaped.a(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
+            NonNullList<RecipeItemStack> ingredients = apply(player, view, shaped.getKey(), shaped.a(), "shaped:ingredient", ItemSlot.Recipe.SHAPED_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -106,9 +110,11 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             return new ShapedRecipes(shaped.getKey(), Lookup.invoke(SHAPED_GROUP, shaped), shaped.i(), shaped.j(), ingredients, result.itemOrDefault(ItemRegistry.empty()));
         } else if (recipe instanceof ShapelessRecipes) {
             final ShapelessRecipes shapeless = (ShapelessRecipes) recipe;
-            final var result = this.mapper.apply(player, recipe.c(), view, ItemSlot.Recipe.SHAPELESS_RESULT);
+            final var result = this.mapper.context(player, recipe.c(), view)
+                    .withRecipe(shapeless.getKey(), ItemSlot.Recipe.SHAPELESS_RESULT)
+                    .apply();
 
-            NonNullList<RecipeItemStack> ingredients = apply(player, view, shapeless.a(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
+            NonNullList<RecipeItemStack> ingredients = apply(player, view, shapeless.getKey(), shapeless.a(), "shapeless:ingredient", ItemSlot.Recipe.SHAPELESS_INGREDIENT);
             if (ingredients == null) {
                 if (!result.edited()) {
                     return null;
@@ -119,11 +125,13 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             return new ShapelessRecipes(shapeless.getKey(), Lookup.invoke(SHAPELESS_GROUP, shapeless), result.itemOrDefault(ItemRegistry.empty()), ingredients);
         } else if (recipe instanceof RecipeStonecutting) {
             final RecipeStonecutting stonecutter = (RecipeStonecutting) recipe;
-            final var result = this.mapper.apply(player, recipe.c(), view, ItemSlot.Recipe.STONECUTTER_RESULT);
+            final var result = this.mapper.context(player, recipe.c(), view)
+                    .withRecipe(stonecutter.getKey(), ItemSlot.Recipe.STONECUTTER_RESULT)
+                    .apply();
 
             final RecipeItemStack ingredient = Lookup.invoke(SINGLE_INGREDIENT, stonecutter);
 
-            RecipeItemStack applied = apply(player, view, ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+            RecipeItemStack applied = apply(player, view, stonecutter.getKey(), ingredient, ItemSlot.Recipe.STONECUTTER_INGREDIENT);
             if (applied == null) {
                 if (!result.edited()) {
                     return null;
@@ -137,7 +145,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected NonNullList<RecipeItemStack> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull NonNullList<RecipeItemStack> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
+    protected NonNullList<RecipeItemStack> apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull NonNullList<RecipeItemStack> ingredients, @NotNull String slotType, @NotNull ItemSlot[] slots) {
         if (ingredients.isEmpty()) {
             return null;
         }
@@ -145,7 +153,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         boolean edited = false;
         for (int i = 0; i < ingredients.size(); i++) {
             final RecipeItemStack ingredient = ingredients.get(i);
-            final RecipeItemStack result = apply(player, view, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
+            final RecipeItemStack result = apply(player, view, recipeId, ingredient, i < 9 ? slots[i] : ItemSlot.pair(slotType, i));
             if (result == null) {
                 list.add(ingredient);
             } else {
@@ -161,7 +169,7 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
     }
 
     @Nullable
-    protected RecipeItemStack apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull RecipeItemStack ingredient, @NotNull ItemSlot slot) {
+    protected RecipeItemStack apply(@NotNull PlayerT player, @NotNull ItemView view, @NotNull Object recipeId, @NotNull RecipeItemStack ingredient, @NotNull ItemSlot slot) {
         if (ingredient == RecipeItemStack.a) { // empty item
             return null;
         }
@@ -172,7 +180,9 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
             if (item == null) {
                 continue;
             }
-            final var result = this.mapper.apply(player, item, view, slot);
+            final var result = this.mapper.context(player, item, view)
+                    .withRecipe(recipeId, slot)
+                    .apply();
             if (result.edited()) {
                 items.add(new RecipeItemStack.StackProvider(result.itemOrDefault(ItemRegistry.empty())));
                 edited = true;
