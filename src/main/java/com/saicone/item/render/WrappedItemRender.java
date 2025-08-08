@@ -15,7 +15,13 @@ public abstract class WrappedItemRender<PlayerT, ItemA, ItemB> extends ItemRende
     @Override
     public void wrapAndApply(@NotNull ItemContext<PlayerT, ItemB> context) {
         final ItemA item = context.item() == null ? null : wrap(context.item());
-        final var wrapped = context(context.player(), item, context.view()).with(context.slot(), context.containerId(), context.entityId(), context.recipeId());
+        final var wrapped = context(context.player(), item, context.view()).with(
+                context.slot(),
+                context.containerId(),
+                context.entityId(),
+                context.recipeId(),
+                context.recipeKey()
+        );
         apply(wrapped);
         if (wrapped.edited()) {
             context.update(wrapped.item() == null ? null : unwrap(wrapped.item()), wrapped.edited(), wrapped.cancel());

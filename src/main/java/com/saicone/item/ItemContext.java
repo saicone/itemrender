@@ -15,7 +15,8 @@ public class ItemContext<PlayerT, ItemT> {
     private ItemSlot slot;
     private Integer containerId;
     private Integer entityId;
-    private Object recipeId;
+    private Integer recipeId;
+    private Object recipeKey;
 
     private transient boolean cancel;
     private transient boolean edited;
@@ -33,6 +34,7 @@ public class ItemContext<PlayerT, ItemT> {
         this.containerId = null;
         this.entityId = null;
         this.recipeId = null;
+        this.recipeKey = null;
 
         this.edited = false;
         this.cancel = false;
@@ -47,6 +49,7 @@ public class ItemContext<PlayerT, ItemT> {
         this.containerId = null;
         this.entityId = null;
         this.recipeId = null;
+        this.recipeKey = null;
 
         this.edited = false;
         this.cancel = false;
@@ -65,12 +68,13 @@ public class ItemContext<PlayerT, ItemT> {
     }
 
     @NotNull
-    @Contract("_, _, _, _ -> this")
-    public ItemContext<PlayerT, ItemT> with(@Nullable ItemSlot slot, @Nullable Integer containerId, @Nullable Integer entityId, @Nullable Object recipeId) {
+    @Contract("_, _, _, _, _ -> this")
+    public ItemContext<PlayerT, ItemT> with(@Nullable ItemSlot slot, @Nullable Integer containerId, @Nullable Integer entityId, @Nullable Integer recipeId, @Nullable Object recipeKey) {
         this.slot = slot;
         this.containerId = containerId;
         this.entityId = entityId;
         this.recipeId = recipeId;
+        this.recipeKey = recipeKey;
         return this;
     }
 
@@ -98,7 +102,15 @@ public class ItemContext<PlayerT, ItemT> {
 
     @NotNull
     @Contract("_, _ -> this")
-    public ItemContext<PlayerT, ItemT> withRecipe(@NotNull Object recipeId, @NotNull ItemSlot slot) {
+    public ItemContext<PlayerT, ItemT> withRecipe(@NotNull Object recipeKey, @NotNull ItemSlot slot) {
+        this.slot = slot;
+        this.recipeKey = recipeKey;
+        return this;
+    }
+
+    @NotNull
+    @Contract("_, _ -> this")
+    public ItemContext<PlayerT, ItemT> withRecipe(int recipeId, @NotNull ItemSlot slot) {
         this.slot = slot;
         this.recipeId = recipeId;
         return this;
@@ -135,22 +147,24 @@ public class ItemContext<PlayerT, ItemT> {
         return view;
     }
 
-    @NotNull
     public ItemSlot slot() {
         return slot;
     }
 
-    public int containerId() {
+    public Integer containerId() {
         return containerId;
     }
 
-    public int entityId() {
+    public Integer entityId() {
         return entityId;
     }
 
-    @NotNull
-    public String recipeId() {
-        return recipeId.toString();
+    public Integer recipeId() {
+        return recipeId;
+    }
+
+    public String recipeKey() {
+        return recipeKey.toString();
     }
 
     public boolean cancel() {

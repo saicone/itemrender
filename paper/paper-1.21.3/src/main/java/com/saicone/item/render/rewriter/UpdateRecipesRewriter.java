@@ -113,7 +113,15 @@ public class UpdateRecipesRewriter<PlayerT> extends PacketRewriter<PlayerT, Item
         final List<SelectableRecipe.SingleInputEntry<StonecutterRecipe>> stonecutterRecipes = new ArrayList<>();
         for (SelectableRecipe.SingleInputEntry<StonecutterRecipe> entry : recipes.entries()) {
             final SelectableRecipe<StonecutterRecipe> selectable = entry.recipe();
-            final SlotDisplay display = rewrite(this.mapper, player, view, selectable.optionDisplay(), ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+            final SlotDisplay display = rewrite(selectable.optionDisplay(), item -> {
+                if (selectable.recipe().isPresent()) {
+                    return this.mapper.context(player, item, view)
+                            .withRecipe(selectable.recipe().get().id().location(), ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+                } else {
+                    return this.mapper.context(player, item, view)
+                            .withSlot(ItemSlot.Recipe.STONECUTTER_INGREDIENT);
+                }
+            });
             if (display == null) {
                 stonecutterRecipes.add(entry);
             } else {
