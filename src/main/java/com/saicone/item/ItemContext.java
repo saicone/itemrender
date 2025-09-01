@@ -52,7 +52,7 @@ public class ItemContext<PlayerT, ItemT> {
         this.recipeKey = null;
 
         this.edited = false;
-        this.cancel = false;
+        this.cancel = false; // Magic value, for now doesn't do anything
     }
 
     @ApiStatus.Internal
@@ -68,13 +68,13 @@ public class ItemContext<PlayerT, ItemT> {
     }
 
     @NotNull
-    @Contract("_, _, _, _, _ -> this")
-    public ItemContext<PlayerT, ItemT> with(@Nullable ItemSlot slot, @Nullable Integer containerId, @Nullable Integer entityId, @Nullable Integer recipeId, @Nullable Object recipeKey) {
-        this.slot = slot;
-        this.containerId = containerId;
-        this.entityId = entityId;
-        this.recipeId = recipeId;
-        this.recipeKey = recipeKey;
+    @Contract("_ -> this")
+    public ItemContext<PlayerT, ItemT> with(@NotNull ItemContext<?, ?> context) {
+        this.slot = context.slot;
+        this.containerId = context.containerId;
+        this.entityId = context.entityId;
+        this.recipeId = context.recipeId;
+        this.recipeKey = context.recipeKey;
         return this;
     }
 
