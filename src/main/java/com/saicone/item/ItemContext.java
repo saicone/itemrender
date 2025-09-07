@@ -18,7 +18,7 @@ public class ItemContext<PlayerT, ItemT> {
     private Integer recipeId;
     private Object recipeKey;
 
-    private transient boolean cancel;
+    private transient boolean cancel; // Magic value, for now doesn't do anything
     private transient boolean edited;
 
     public ItemContext(@NotNull ItemMapper<PlayerT, ItemT> owner) {
@@ -52,7 +52,7 @@ public class ItemContext<PlayerT, ItemT> {
         this.recipeKey = null;
 
         this.edited = false;
-        this.cancel = false; // Magic value, for now doesn't do anything
+        this.cancel = false;
     }
 
     @ApiStatus.Internal

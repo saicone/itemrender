@@ -90,7 +90,6 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
         if (mappers == null) {
             return;
         }
-        int index = 0;
         for (ItemMapper<PlayerT, ?> mapper : mappers) {
             try {
                 if (mapper.type().equals(this.type())) {
@@ -100,15 +99,8 @@ public abstract class AbstractItemMapper<PlayerT, ItemT> implements ItemMapper<P
                     wrappedMapper.wrapAndApply(context);
                 }
             } catch (Throwable t) {
-                final RuntimeException exception = new RuntimeException("There is an error while executing " + mappers.getKey(index) + " on " + this.getClass().getName(), t);
-                // Item mapping must be thread-safe
-                if (parent() == null) {
-                    exception.printStackTrace();
-                } else {
-                    throw exception;
-                }
+                mapper.report(this, t);
             }
-            index++;
         }
     }
 

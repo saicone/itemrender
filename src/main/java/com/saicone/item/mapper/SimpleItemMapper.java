@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
@@ -18,6 +19,7 @@ public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, Ite
     private final Class<ItemT> type;
     private final Consumer<ItemContext<PlayerT, ItemT>> consumer;
     private Set<ItemView> views;
+    private BiConsumer<Object, Throwable> onReport;
 
     public SimpleItemMapper(@NotNull Class<ItemT> type, @NotNull Consumer<ItemContext<PlayerT, ItemT>> consumer) {
         this.type = type;
@@ -58,6 +60,13 @@ public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, Ite
         return this;
     }
 
+    @NotNull
+    @Contract("_ -> this")
+    public SimpleItemMapper<PlayerT, ItemT> onReport(@NotNull BiConsumer<Object, Throwable> onReport) {
+        this.onReport = onReport;
+        return this;
+    }
+
     @Nullable
     @ApiStatus.Internal
     protected AbstractItemMapper<PlayerT, ItemT> parent() {
@@ -90,7 +99,11 @@ public class SimpleItemMapper<PlayerT, ItemT> implements ItemMapper<PlayerT, Ite
     }
 
     @Override
-    public @NotNull ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
-        throw new IllegalStateException("Cannot create ItemContext using a SimpleItemMapper instance");
+    public void report(@NotNull Object executor, @NotNull Throwable throwable) {
+        if (this.onReport != null) {
+            this.onReport.accept(executor, throwable);
+            return;
+        }
+        ItemMapper.super.report(executor, throwable);
     }
 }

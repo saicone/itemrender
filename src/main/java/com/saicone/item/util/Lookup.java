@@ -1,5 +1,6 @@
 package com.saicone.item.util;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
 
+@ApiStatus.Internal
 public class Lookup {
 
     Lookup() {

@@ -7,7 +7,7 @@ public interface ItemMapper<PlayerT, ItemT> {
 
     @NotNull
     default String key() {
-        return type().getName();
+        return getClass().getName();
     }
 
     @NotNull
@@ -18,6 +18,11 @@ public interface ItemMapper<PlayerT, ItemT> {
     void apply(@NotNull ItemContext<PlayerT, ItemT> context);
 
     @NotNull
-    ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view);
+    default ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
+        throw new IllegalStateException("Cannot create ItemContext using a " + getClass().getName() + " instance");
+    }
 
+    default void report(@NotNull Object executor, @NotNull Throwable throwable) {
+        new RuntimeException("There is an error while executing " + key() + " on " + executor.getClass().getName(), throwable).printStackTrace();
+    }
 }
