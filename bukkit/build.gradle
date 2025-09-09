@@ -49,7 +49,7 @@ subprojects {
 }
 
 dependencies {
-    api rootProject
+    api project(':api')
     compileOnly 'org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT'
 }
 

@@ -4,7 +4,7 @@ plugins {
 
 description = 'ItemRender'
 
-allprojects {
+subprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
     apply plugin: 'java-library'
@@ -28,6 +28,10 @@ allprojects {
     }
 
     dependencies {
+        if (project.name != 'api') {
+            compileOnlyApi project(':api')
+        }
+
         compileOnly 'org.jetbrains:annotations:26.0.2'
 
         compileOnly fileTree(dir: 'libs', includes: ['*.jar'])
@@ -42,30 +46,5 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_21
         withSourcesJar()
         withJavadocJar()
-    }
-}
-
-subprojects {
-    dependencies {
-        compileOnlyApi rootProject
-    }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-
-            pom {
-                afterEvaluate {
-                    description = 'Main instance of ItemRender API'
-                }
-            }
-        }
     }
 }

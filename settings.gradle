@@ -1,5 +1,9 @@
 rootProject.name = 'itemrender'
 
+// Main project
+include(':api')
+
+// Bukkit compatibility before mojang mappings
 include(
         ':bukkit',
         ':bukkit:bukkit-1.8.8',
@@ -15,7 +19,11 @@ include(
         ':bukkit:bukkit-1.16.1',
         ':bukkit:bukkit-1.16.3',
         ':bukkit:bukkit-1.16.5',
-        ':bukkit:bukkit-1.16.5:stickynote',
+        ':bukkit:bukkit-1.16.5:stickynote'
+)
+
+// Paper & Bukkit compatibility after mojang mappings
+include(
         ':paper',
         ':paper:paper-1.17.1',
         ':paper:paper-1.18.1',
@@ -31,7 +39,11 @@ include(
         ':paper:paper-1.21.3',
         ':paper:paper-1.21.4',
         ':paper:paper-1.21.5',
-        ':paper:paper-1.21.8',
+        ':paper:paper-1.21.8'
+)
+
+// Plugin / Loader
+include(
         ':plugin',
         ':plugin:plugin-bukkit',
         ':plugin:plugin-paper'
