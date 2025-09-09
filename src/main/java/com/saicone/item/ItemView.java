@@ -1,5 +1,9 @@
 package com.saicone.item;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
+
 public enum ItemView {
 
     /**
@@ -53,5 +57,15 @@ public enum ItemView {
 
     public boolean isThirdPerson() {
         return this == EQUIPMENT || this == METADATA;
+    }
+
+    @NotNull
+    public static Optional<ItemView> of(@NotNull String name) {
+        for (ItemView value : values()) {
+            if (value.name().equalsIgnoreCase(name)) {
+                return Optional.of(value);
+            }
+        }
+        return Optional.empty();
     }
 }
