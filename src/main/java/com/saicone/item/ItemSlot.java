@@ -1,7 +1,9 @@
 package com.saicone.item;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -30,6 +32,11 @@ public interface ItemSlot {
     @NotNull
     static IntRange range(int from, int to) {
         return new IntRange(from, to);
+    }
+
+    @NotNull
+    static Compose compose(@NotNull ItemSlot... slots) {
+        return new Compose(slots);
     }
 
     boolean matches(Object object);
@@ -156,6 +163,46 @@ public interface ItemSlot {
         }
     }
 
+    class Compose implements ItemSlot {
+
+        private final ItemSlot[] slots;
+
+        @ApiStatus.Internal
+        public Compose(@NotNull ItemSlot[] slots) {
+            this.slots = slots;
+        }
+
+        @NotNull
+        @ApiStatus.Internal
+        public ItemSlot[] slots() {
+            return slots;
+        }
+
+        @Override
+        public boolean matches(Object object) {
+            for (ItemSlot slot : slots) {
+                if (slot.matches(object)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public final boolean equals(Object object) {
+            if (this == object) return true;
+            if (!(object instanceof Compose)) return false;
+
+            Compose compose = (Compose) object;
+            return Arrays.equals(slots, compose.slots);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(slots);
+        }
+    }
+
     class Window {
         public static final ItemSlot CURSOR = integer(-1);
     }
@@ -170,8 +217,8 @@ public interface ItemSlot {
         HEAD;
 
         public static final Equipment[] VALUES = values();
-        public static final Equipment[] HAND = new Equipment[] { MAINHAND, OFFHAND };
-        public static final Equipment[] ARMOR = new Equipment[] { FEET, LEGS, CHEST, HEAD };
+        public static final ItemSlot HAND = compose(MAINHAND, OFFHAND);
+        public static final ItemSlot ARMOR = compose(FEET, LEGS, CHEST, HEAD);
 
         private final Set<String> aliases = new HashSet<>();
 
@@ -202,30 +249,30 @@ public interface ItemSlot {
         public static final ItemSlot COOKING_INGREDIENT = any("cooking:ingredient");
         public static final ItemSlot COOKING_FUEL = any("cooking:fueld");
         public static final ItemSlot COOKING_RESULT = any("cooking:result");
-        public static final ItemSlot[] COOKING = new ItemSlot[] { COOKING_INGREDIENT, COOKING_FUEL, COOKING_RESULT };
+        public static final ItemSlot COOKING = compose(COOKING_INGREDIENT, COOKING_FUEL, COOKING_RESULT);
 
         public static final ItemSlot[] SHAPED_INGREDIENT = new ItemSlot[9];
         public static final ItemSlot SHAPED_RESULT = any("shaped:result");
-        public static final ItemSlot[] SHAPED = new ItemSlot[] { any("shaped:ingredient"), SHAPED_RESULT };
+        public static final ItemSlot SHAPED = compose(any("shaped:ingredient"), SHAPED_RESULT);
 
         public static final ItemSlot[] SHAPELESS_INGREDIENT = new ItemSlot[9];
         public static final ItemSlot SHAPELESS_RESULT = any("shapeless:result");
-        public static final ItemSlot[] SHAPELESS = new ItemSlot[] { any("shapeless:ingredient"), SHAPELESS_RESULT };
+        public static final ItemSlot SHAPELESS = compose(any("shapeless:ingredient"), SHAPELESS_RESULT);
 
         public static final ItemSlot TRANSFORM_TEMPLATE = any("transform:template");
         public static final ItemSlot TRANSFORM_BASE = any("transform:base");
         public static final ItemSlot TRANSFORM_ADDITION = any("transform:addition");
         public static final ItemSlot TRANSFORM_RESULT = any("transform:result");
-        public static final ItemSlot[] TRANSFORM = new ItemSlot[] { TRANSFORM_TEMPLATE, TRANSFORM_BASE, TRANSFORM_ADDITION, TRANSFORM_RESULT };
+        public static final ItemSlot TRANSFORM = compose(TRANSFORM_TEMPLATE, TRANSFORM_BASE, TRANSFORM_ADDITION, TRANSFORM_RESULT);
 
         public static final ItemSlot TRIM_TEMPLATE = any("trim:template");
         public static final ItemSlot TRIM_BASE = any("trim:base");
         public static final ItemSlot TRIM_ADDITION = any("trim:addition");
-        public static final ItemSlot[] TRIM = new ItemSlot[] { TRIM_TEMPLATE, TRIM_BASE, TRIM_ADDITION };
+        public static final ItemSlot TRIM = compose(TRIM_TEMPLATE, TRIM_BASE, TRIM_ADDITION);
 
         public static final ItemSlot STONECUTTER_INGREDIENT = any("stonecutter:ingredient");
         public static final ItemSlot STONECUTTER_RESULT = any("stonecutter:result");
-        public static final ItemSlot[] STONECUTTER = new ItemSlot[] { STONECUTTER_INGREDIENT, STONECUTTER_RESULT };
+        public static final ItemSlot STONECUTTER = compose(STONECUTTER_INGREDIENT, STONECUTTER_RESULT);
         
         static {
             for (int i = 0; i < 9; i++) {
