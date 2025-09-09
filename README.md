@@ -29,42 +29,49 @@ ItemRender API offers easy-to-use methods to edit client-side items.
 
 ```java
 // A simple edit that parse placeholders on item name and lore
-ItemRenderAPI.bukkit().register("myedit:placeholders", context -> {
-    ItemStack item = context.item();
-    if (item != null && item.hasItemMeta()) {
-        ItemMeta meta = item.getItemMeta();
-        boolean modified = false;
+var mapper = ItemMapper.<Player, ItemStack>builder("myedit:placeholders")
+    .views(ItemView.WINDOW, ItemView.MERCHANT)
+    .apply(context -> {
+        ItemStack item = context.item();
+        if (item != null && item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            boolean modified = false;
 
-        String name = meta.getDisplayName();
-        if (name != null) {
-            name = PlaceholderAPI.setPlaceholders(context.player(), name);
-            modified = true;
-        }
-
-        List<String> lore = meta.getLore();
-        if (lore != null && !lore.isEmpty()) {
-            for (int i = 0; i < lore.size(); i++) {
-                lore.set(i, PlaceholderAPI.setPlaceholders(context.player(), lore.get(i)));
+            String name = meta.getDisplayName();
+            if (name != null) {
+                name = PlaceholderAPI.setPlaceholders(context.player(), name);
+                modified = true;
             }
-            modified = true;
-        }
 
-        if (modified) {
-            item.setItemMeta(meta);
-            context.item(item);
+            List<String> lore = meta.getLore();
+            if (lore != null && !lore.isEmpty()) {
+                for (int i = 0; i < lore.size(); i++) {
+                    lore.set(i, PlaceholderAPI.setPlaceholders(context.player(), lore.get(i)));
+                }
+                modified = true;
+            }
+
+            if (modified) {
+                item.setItemMeta(meta);
+                context.item(item);
+            }
         }
-    }
-}).when(ItemView.WINDOW, ItemView.MERCHANT);
+    }).build();
 
 // An edit that doesn't show player armor if the player has invisibility effect and 'invisible.armor' permission
-ItemRenderAPI.bukkit().register("myedit:invisibility", context -> {
-    for (Player player : Bukkit.getOnlinePlayers()) {
-       if (player.getEntityId() == context.entityId()) {
-           if (player.hasPotionEffect(PotionEffectType.INVISIBILITY) && player.hasPermission("invisible.armor")) {
-               context.item(null);
+var mapper = ItemMapper.<Player, ItemStack>builder("myedit:invisibility")
+    .views(ItemView.EQUIPMENT)
+    .apply(context -> {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+           if (player.getEntityId() == context.entityId()) {
+               if (player.hasPotionEffect(PotionEffectType.INVISIBILITY) && player.hasPermission("invisible.armor")) {
+                   context.item(null);
+               }
+               break;
            }
-           break;
-       }
-    }
-}).when(ItemView.EQUIPMENT);
+        }
+    }).build();
+
+// Register mapper into item render
+ItemRenderAPI.bukkit().register(mapper);
 ```

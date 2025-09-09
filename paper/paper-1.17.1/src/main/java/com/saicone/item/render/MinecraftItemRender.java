@@ -48,11 +48,6 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
     }
 
     @Override
-    public @NotNull Class<ItemStack> type() {
-        return ItemStack.class;
-    }
-
-    @Override
     public void load() {
         PacketRewriterRegistry.register(this);
         Bukkit.getPluginManager().registerEvents(this, plugin);

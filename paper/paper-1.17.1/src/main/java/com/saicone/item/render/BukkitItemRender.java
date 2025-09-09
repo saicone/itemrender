@@ -1,6 +1,6 @@
 package com.saicone.item.render;
 
-import com.saicone.item.mapper.AbstractItemMapper;
+import com.saicone.item.ItemMapperBus;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -8,14 +8,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class BukkitItemRender extends WrappedItemRender<Player, org.bukkit.inventory.ItemStack, ItemStack> {
 
-    private final AbstractItemMapper<Player, ?> parent;
+    private final ItemMapperBus<Player, ?> parent;
 
-    public BukkitItemRender(@NotNull AbstractItemMapper<Player, ?> parent) {
+    public BukkitItemRender(@NotNull ItemMapperBus<Player, ?> parent) {
         this.parent = parent;
     }
 
     @Override
-    protected @NotNull AbstractItemMapper<Player, ?> parent() {
+    protected @NotNull ItemMapperBus<Player, ?> parent() {
         return parent;
     }
 

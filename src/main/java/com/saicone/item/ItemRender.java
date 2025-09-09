@@ -1,13 +1,12 @@
 package com.saicone.item;
 
-import com.saicone.item.mapper.AbstractItemMapper;
 import com.saicone.item.render.WrappedItemRender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ItemRender<PlayerT, ItemT> extends AbstractItemMapper<PlayerT, ItemT> {
+public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, ItemT> {
 
     private final Map<Class<?>, WrappedItemRender<PlayerT, ?, ItemT>> wrappedMappers = new HashMap<>();
 
@@ -28,7 +27,7 @@ public abstract class ItemRender<PlayerT, ItemT> extends AbstractItemMapper<Play
     public <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
         final WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = new WrappedItemRender<>() {
             @Override
-            protected @NotNull AbstractItemMapper<PlayerT, ?> parent() {
+            protected @NotNull ItemMapperBus<PlayerT, ?> parent() {
                 return ItemRender.this;
             }
 

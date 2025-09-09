@@ -2,7 +2,7 @@ package com.saicone.item.render;
 
 import com.saicone.item.ItemContext;
 import com.saicone.item.ItemRender;
-import com.saicone.item.mapper.WrappedItemMapper;
+import com.saicone.item.WrappedItemMapper;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class WrappedItemRender<PlayerT, ItemA, ItemB> extends ItemRender<PlayerT, ItemA> implements WrappedItemMapper<PlayerT, ItemA, ItemB> {
