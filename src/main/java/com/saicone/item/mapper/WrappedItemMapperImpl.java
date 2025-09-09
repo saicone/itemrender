@@ -5,6 +5,7 @@ import com.saicone.item.ItemContext;
 import com.saicone.item.ItemView;
 import com.saicone.item.ItemWrapper;
 import com.saicone.item.WrappedItemMapper;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@ApiStatus.Internal
 public class WrappedItemMapperImpl<PlayerT, ItemA, ItemB> extends ItemMapperImpl<PlayerT, ItemA> implements WrappedItemMapper<PlayerT, ItemA, ItemB> {
 
     private final ItemWrapper<ItemA, ItemB> wrapper;
@@ -47,6 +49,7 @@ public class WrappedItemMapperImpl<PlayerT, ItemA, ItemB> extends ItemMapperImpl
         return wrapper.unwrap(item);
     }
 
+    @ApiStatus.Internal
     public static class BuilderImpl<PlayerT, ItemA, ItemB> extends AbstractItemMapperBuilder<PlayerT, ItemA, WrappedItemMapper<PlayerT, ItemA, ItemB>, WrappedItemMapper.Builder<PlayerT, ItemA, ItemB>> implements WrappedItemMapper.Builder<PlayerT, ItemA, ItemB> {
 
         private ItemWrapper<ItemA, ItemB> wrapper;

@@ -1,30 +1,35 @@
 package com.saicone.item;
 
 import com.saicone.item.render.WrappedItemRender;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, ItemT> {
 
-    private final Map<Class<?>, WrappedItemRender<PlayerT, ?, ItemT>> wrappedMappers = new HashMap<>();
+    private final Map<Class<?>, ItemRender<PlayerT, ?>> subRenders = new HashMap<>();
 
     public abstract void load();
 
     @NotNull
     @SuppressWarnings("unchecked")
-    public <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> using(@NotNull Class<ItemA> type) {
-        WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = (WrappedItemRender<PlayerT, ItemA, ItemT>) wrappedMappers.get(type);
-        if (wrapped == null) {
-            wrapped = wrapped(type);
-            wrappedMappers.put(type, wrapped);
+    public <ItemA> ItemRender<PlayerT, ItemA> using(@NotNull Class<ItemA> type) {
+        ItemRender<PlayerT, ItemA> render = (WrappedItemRender<PlayerT, ItemA, ItemT>) subRenders.get(type);
+        if (render == null) {
+            render = createSubRender(type);
+            if (render == null) {
+                throw new IllegalArgumentException("Cannot create sub-render for " + type.getName() + " due lack of compatibility, please provide your own ItemWrapper to #using() method");
+            }
+            subRenders.put(type, render);
         }
-        return wrapped;
+        return render;
     }
 
     @NotNull
-    public <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
+    public <ItemA> ItemRender<PlayerT, ItemA> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
         final WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = new WrappedItemRender<>() {
             @Override
             protected @NotNull ItemMapperBus<PlayerT, ?> parent() {
@@ -46,9 +51,13 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
                 return wrapper.unwrap(item);
             }
         };
-        wrappedMappers.put(wrapper.type(), wrapped);
+        subRenders.put(wrapper.type(), wrapped);
         return wrapped;
     }
 
-    protected abstract <ItemA> WrappedItemRender<PlayerT, ItemA, ItemT> wrapped(@NotNull Class<ItemA> type);
+    @ApiStatus.Experimental
+    @Nullable
+    protected <ItemA> ItemRender<PlayerT, ItemA> createSubRender(@NotNull Class<ItemA> type) {
+        return null;
+    }
 }

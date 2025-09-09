@@ -4,6 +4,7 @@ import com.saicone.item.AbstractItemMapperBuilder;
 import com.saicone.item.ItemContext;
 import com.saicone.item.ItemMapper;
 import com.saicone.item.ItemView;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@ApiStatus.Internal
 public class ItemMapperImpl<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
 
     private final String key;
@@ -58,6 +60,7 @@ public class ItemMapperImpl<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT
         ItemMapper.super.report(executor, throwable);
     }
 
+    @ApiStatus.Internal
     public static class BuilderImpl<PlayerT, ItemT> extends AbstractItemMapperBuilder<PlayerT, ItemT, ItemMapper<PlayerT, ItemT>, ItemMapper.Builder<PlayerT, ItemT>> implements ItemMapper.Builder<PlayerT, ItemT> {
 
         public BuilderImpl(@NotNull String key) {

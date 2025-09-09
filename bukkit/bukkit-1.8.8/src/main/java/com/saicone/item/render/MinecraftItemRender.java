@@ -1,5 +1,6 @@
 package com.saicone.item.render;
 
+import com.saicone.item.ItemRender;
 import com.saicone.item.network.PacketItemRender;
 import com.saicone.item.render.registry.PacketRewriterRegistry;
 import io.netty.channel.Channel;
@@ -21,6 +22,7 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 
@@ -60,14 +62,14 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <ItemA> WrappedItemRender<Player, ItemA, ItemStack> wrapped(@NotNull Class<ItemA> type) {
-        final WrappedItemRender<Player, ?, ItemStack> result;
+    protected @Nullable <ItemA> ItemRender<Player, ItemA> createSubRender(@NotNull Class<ItemA> type) {
+        final ItemRender<Player, ?> result;
         if (type.equals(org.bukkit.inventory.ItemStack.class)) {
             result = new BukkitItemRender(this);
         } else {
-            throw new IllegalArgumentException("Cannot create wrapper for " + type.getName());
+            return null;
         }
-        return (WrappedItemRender<Player, ItemA, ItemStack>) result;
+        return (ItemRender<Player, ItemA>) result;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
