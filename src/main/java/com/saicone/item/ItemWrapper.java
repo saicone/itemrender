@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 public interface ItemWrapper<ItemA, ItemB> {
 
     @NotNull
-    Class<ItemA> type();
+    Class<ItemA> itemType();
 
     @NotNull
     ItemA wrap(@NotNull ItemB item);

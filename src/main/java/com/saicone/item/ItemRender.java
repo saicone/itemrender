@@ -12,6 +12,9 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
 
     private final Map<Class<?>, ItemRender<PlayerT, ?>> subRenders = new HashMap<>();
 
+    @NotNull
+    public abstract Class<PlayerT> playerType();
+
     public abstract void load();
 
     @NotNull
@@ -37,8 +40,13 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
             }
 
             @Override
-            public @NotNull Class<ItemA> type() {
-                return wrapper.type();
+            public @NotNull Class<PlayerT> playerType() {
+                return ItemRender.this.playerType();
+            }
+
+            @Override
+            public @NotNull Class<ItemA> itemType() {
+                return wrapper.itemType();
             }
 
             @Override
@@ -51,7 +59,7 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
                 return wrapper.unwrap(item);
             }
         };
-        subRenders.put(wrapper.type(), wrapped);
+        subRenders.put(wrapper.itemType(), wrapped);
         return wrapped;
     }
 

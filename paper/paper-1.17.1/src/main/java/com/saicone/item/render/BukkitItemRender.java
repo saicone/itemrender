@@ -20,7 +20,12 @@ public class BukkitItemRender extends WrappedItemRender<Player, org.bukkit.inven
     }
 
     @Override
-    public @NotNull Class<org.bukkit.inventory.ItemStack> type() {
+    public @NotNull Class<Player> playerType() {
+        return Player.class;
+    }
+
+    @Override
+    public @NotNull Class<org.bukkit.inventory.ItemStack> itemType() {
         return org.bukkit.inventory.ItemStack.class;
     }
 

@@ -35,8 +35,8 @@ public class WrappedItemMapperImpl<PlayerT, ItemA, ItemB> extends ItemMapperImpl
     }
 
     @Override
-    public @NotNull Class<ItemA> type() {
-        return wrapper.type();
+    public @NotNull Class<ItemA> itemType() {
+        return wrapper.itemType();
     }
 
     @Override
