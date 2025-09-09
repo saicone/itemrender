@@ -53,7 +53,7 @@ var mapper = ItemMapper.<Player, ItemStack>builder("myedit:placeholders")
 
             if (modified) {
                 item.setItemMeta(meta);
-                context.item(item);
+                context.setItem(item);
             }
         }
     }).build();
@@ -65,7 +65,7 @@ var mapper = ItemMapper.<Player, ItemStack>builder("myedit:invisibility")
         for (Player player : Bukkit.getOnlinePlayers()) {
            if (player.getEntityId() == context.entityId()) {
                if (player.hasPotionEffect(PotionEffectType.INVISIBILITY) && player.hasPermission("invisible.armor")) {
-                   context.item(null);
+                   context.setItem(null);
                }
                break;
            }

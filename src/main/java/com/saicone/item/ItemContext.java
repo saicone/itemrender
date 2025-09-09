@@ -180,14 +180,14 @@ public class ItemContext<PlayerT, ItemT> {
         return edited;
     }
 
-    public void item(@Nullable ItemT item) {
+    public void setItem(@Nullable ItemT item) {
         if (!this.edited) {
             this.edited = item != null || this.item != null;
         }
         this.item = item;
     }
 
-    public void cancel(boolean cancel) {
+    public void setCancel(boolean cancel) {
         this.cancel = cancel;
     }
 }
