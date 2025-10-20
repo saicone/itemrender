@@ -81,17 +81,19 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
                 list = new ArrayList<>();
                 this.mappers.put(view, list);
             }
+            if (list.isEmpty()) {
+                list.add(mapper);
+                continue;
+            }
             if (list.contains(mapper)) {
                 continue;
             }
-            if (!list.isEmpty()) {
-                if (mapper.priority() < list.get(0).priority()) {
-                    list.add(0, mapper);
-                    continue;
-                } else if (mapper.priority() >= list.get(list.size() - 1).priority()) {
-                    list.add(mapper);
-                    continue;
-                }
+            if (mapper.priority() < list.get(0).priority()) {
+                list.add(0, mapper);
+                continue;
+            } else if (mapper.priority() >= list.get(list.size() - 1).priority()) {
+                list.add(mapper);
+                continue;
             }
             final ListIterator<ItemMapper<PlayerT, ?>> iterator = list.listIterator();
             while (iterator.hasNext()) {
@@ -106,6 +108,7 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
         final ItemMapperBus<PlayerT, ?> parent = parent();
         if (parent != null) {
             parent.removeIf((view, element) -> element == this && !this.mappers.containsKey(view));
+            parent.compute(this);
         }
     }
 
