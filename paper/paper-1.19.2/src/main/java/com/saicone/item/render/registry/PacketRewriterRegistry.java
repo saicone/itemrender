@@ -8,7 +8,6 @@ import com.saicone.item.render.rewriter.MerchantOffersRewriter;
 import com.saicone.item.render.rewriter.SetEntityDataRewriter;
 import com.saicone.item.render.rewriter.SetEquipmentRewriter;
 import com.saicone.item.render.rewriter.SystemChatRewriter;
-import com.saicone.item.render.rewriter.UpdateRecipesRewriter;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -16,7 +15,6 @@ import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
-import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +29,5 @@ public class PacketRewriterRegistry {
         itemRender.register(ClientboundSetEntityDataPacket.class, SetEntityDataRewriter::new);
         itemRender.register(ClientboundSetEquipmentPacket.class, SetEquipmentRewriter::new);
         itemRender.register(ClientboundSystemChatPacket.class, SystemChatRewriter::new);
-        itemRender.register(ClientboundUpdateRecipesPacket.class, UpdateRecipesRewriter::new);
     }
 }

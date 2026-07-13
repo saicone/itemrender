@@ -243,45 +243,6 @@ public interface ItemSlot {
         }
     }
 
-    class Recipe {
-        public static final ItemSlot CRAFTING_STATION = any("crafting:station");
-
-        public static final ItemSlot COOKING_INGREDIENT = any("cooking:ingredient");
-        public static final ItemSlot COOKING_FUEL = any("cooking:fueld");
-        public static final ItemSlot COOKING_RESULT = any("cooking:result");
-        public static final ItemSlot COOKING = compose(COOKING_INGREDIENT, COOKING_FUEL, COOKING_RESULT);
-
-        public static final ItemSlot[] SHAPED_INGREDIENT = new ItemSlot[9];
-        public static final ItemSlot SHAPED_RESULT = any("shaped:result");
-        public static final ItemSlot SHAPED = compose(any("shaped:ingredient"), SHAPED_RESULT);
-
-        public static final ItemSlot[] SHAPELESS_INGREDIENT = new ItemSlot[9];
-        public static final ItemSlot SHAPELESS_RESULT = any("shapeless:result");
-        public static final ItemSlot SHAPELESS = compose(any("shapeless:ingredient"), SHAPELESS_RESULT);
-
-        public static final ItemSlot TRANSFORM_TEMPLATE = any("transform:template");
-        public static final ItemSlot TRANSFORM_BASE = any("transform:base");
-        public static final ItemSlot TRANSFORM_ADDITION = any("transform:addition");
-        public static final ItemSlot TRANSFORM_RESULT = any("transform:result");
-        public static final ItemSlot TRANSFORM = compose(TRANSFORM_TEMPLATE, TRANSFORM_BASE, TRANSFORM_ADDITION, TRANSFORM_RESULT);
-
-        public static final ItemSlot TRIM_TEMPLATE = any("trim:template");
-        public static final ItemSlot TRIM_BASE = any("trim:base");
-        public static final ItemSlot TRIM_ADDITION = any("trim:addition");
-        public static final ItemSlot TRIM = compose(TRIM_TEMPLATE, TRIM_BASE, TRIM_ADDITION);
-
-        public static final ItemSlot STONECUTTER_INGREDIENT = any("stonecutter:ingredient");
-        public static final ItemSlot STONECUTTER_RESULT = any("stonecutter:result");
-        public static final ItemSlot STONECUTTER = compose(STONECUTTER_INGREDIENT, STONECUTTER_RESULT);
-        
-        static {
-            for (int i = 0; i < 9; i++) {
-                SHAPED_INGREDIENT[i] = pair("shaped:ingredient", i);
-                SHAPELESS_INGREDIENT[i] = pair("shapeless:ingredient", i);
-            }
-        }
-    }
-
     class Merchant {
         public static final ItemSlot COST_A = pair("cost", "A");
         public static final ItemSlot COST_B = pair("cost", "B");

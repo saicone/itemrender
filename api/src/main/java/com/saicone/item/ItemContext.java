@@ -15,8 +15,6 @@ public class ItemContext<PlayerT, ItemT> {
     private ItemSlot slot;
     private Integer containerId;
     private Integer entityId;
-    private Integer recipeId;
-    private Object recipeKey;
 
     private transient boolean cancel; // Magic value, for now doesn't do anything
     private transient boolean edited;
@@ -33,8 +31,6 @@ public class ItemContext<PlayerT, ItemT> {
         this.slot = null;
         this.containerId = null;
         this.entityId = null;
-        this.recipeId = null;
-        this.recipeKey = null;
 
         this.edited = false;
         this.cancel = false;
@@ -48,8 +44,6 @@ public class ItemContext<PlayerT, ItemT> {
         this.slot = null;
         this.containerId = null;
         this.entityId = null;
-        this.recipeId = null;
-        this.recipeKey = null;
 
         this.edited = false;
         this.cancel = false;
@@ -73,8 +67,6 @@ public class ItemContext<PlayerT, ItemT> {
         this.slot = context.slot;
         this.containerId = context.containerId;
         this.entityId = context.entityId;
-        this.recipeId = context.recipeId;
-        this.recipeKey = context.recipeKey;
         return this;
     }
 
@@ -97,22 +89,6 @@ public class ItemContext<PlayerT, ItemT> {
     @Contract("_ -> this")
     public ItemContext<PlayerT, ItemT> withEntity(int entityId) {
         this.entityId = entityId;
-        return this;
-    }
-
-    @NotNull
-    @Contract("_, _ -> this")
-    public ItemContext<PlayerT, ItemT> withRecipe(@NotNull Object recipeKey, @NotNull ItemSlot slot) {
-        this.slot = slot;
-        this.recipeKey = recipeKey;
-        return this;
-    }
-
-    @NotNull
-    @Contract("_, _ -> this")
-    public ItemContext<PlayerT, ItemT> withRecipe(int recipeId, @NotNull ItemSlot slot) {
-        this.slot = slot;
-        this.recipeId = recipeId;
         return this;
     }
 
@@ -157,14 +133,6 @@ public class ItemContext<PlayerT, ItemT> {
 
     public Integer entityId() {
         return entityId;
-    }
-
-    public Integer recipeId() {
-        return recipeId;
-    }
-
-    public String recipeKey() {
-        return recipeKey.toString();
     }
 
     public boolean cancel() {

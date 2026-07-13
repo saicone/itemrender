@@ -7,13 +7,11 @@ import com.saicone.item.render.rewriter.CreativeModeSlotRewriter;
 import com.saicone.item.render.rewriter.SetEntityDataRewriter;
 import com.saicone.item.render.rewriter.SetEquipmentRewriter;
 import com.saicone.item.render.rewriter.SystemChatRewriter;
-import com.saicone.item.render.rewriter.UpdateRecipesRewriter;
 import net.minecraft.server.v1_13_R1.ItemStack;
 import net.minecraft.server.v1_13_R1.Packet;
 import net.minecraft.server.v1_13_R1.PacketPlayInSetCreativeSlot;
 import net.minecraft.server.v1_13_R1.PacketPlayOutEntityEquipment;
 import net.minecraft.server.v1_13_R1.PacketPlayOutEntityMetadata;
-import net.minecraft.server.v1_13_R1.PacketPlayOutRecipeUpdate;
 import net.minecraft.server.v1_13_R1.PacketPlayOutSetSlot;
 import net.minecraft.server.v1_13_R1.PacketPlayOutWindowItems;
 import net.minecraft.server.v1_13_R1.PacketPlayOutChat;
@@ -28,6 +26,5 @@ public class PacketRewriterRegistry {
         itemRender.register(PacketPlayOutEntityMetadata.class, SetEntityDataRewriter.class);
         itemRender.register(PacketPlayOutEntityEquipment.class, SetEquipmentRewriter.class);
         itemRender.register(PacketPlayOutChat.class, SystemChatRewriter.class);
-        itemRender.register(PacketPlayOutRecipeUpdate.class, UpdateRecipesRewriter.class);
     }
 }

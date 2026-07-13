@@ -19,10 +19,6 @@ public enum ItemView {
      */
     WINDOW_SERVER,
     /**
-     * Is the information about a recipe.
-     */
-    RECIPE,
-    /**
      * Is the view when an item is listed into merchant inventory.
      */
     MERCHANT,
@@ -47,7 +43,6 @@ public enum ItemView {
     public boolean isFirstPerson() {
         switch (this) {
             case WINDOW:
-            case RECIPE:
             case MERCHANT:
                 return true;
             default:
