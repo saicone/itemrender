@@ -1,0 +1,44 @@
+package com.saicone.itemrender.impl.rewriter;
+
+import com.saicone.itemrender.ItemSlot;
+import com.saicone.itemrender.ItemView;
+import com.saicone.itemrender.network.PacketItemMapper;
+import com.saicone.itemrender.network.PacketRewriter;
+import com.saicone.itemrender.impl.registry.ItemRegistry;
+import com.saicone.itemrender.util.Lookup;
+import net.minecraft.server.v1_8_R3.ItemStack;
+import net.minecraft.server.v1_8_R3.PacketPlayOutSetSlot;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.invoke.MethodHandle;
+
+public class ContainerSetSlotRewriter<PlayerT> extends PacketRewriter<PlayerT, ItemStack, PacketPlayOutSetSlot> {
+
+    private static final MethodHandle CONTAINER_ID = Lookup.getter(PacketPlayOutSetSlot.class, int.class, "a");
+    private static final MethodHandle SLOT = Lookup.getter(PacketPlayOutSetSlot.class, int.class, "b");
+    private static final MethodHandle ITEM = Lookup.getter(PacketPlayOutSetSlot.class, ItemStack.class, "c");
+    private static final MethodHandle SET_ITEM = Lookup.setter(PacketPlayOutSetSlot.class, ItemStack.class, "c");
+
+    public ContainerSetSlotRewriter(@NotNull PacketItemMapper<PlayerT, ItemStack> mapper) {
+        super(mapper);
+    }
+
+    @Override
+    public @NotNull ItemView view(@NotNull PlayerT player) {
+        return this.mapper.creative(player) ? ItemView.WINDOW_CREATIVE : ItemView.WINDOW;
+    }
+
+    @Override
+    public @Nullable PacketPlayOutSetSlot rewrite(@NotNull PlayerT player, @NotNull ItemView view, @NotNull PacketPlayOutSetSlot packet) {
+        final int containerId = Lookup.invoke(CONTAINER_ID, packet);
+        final int slot = Lookup.invoke(SLOT, packet);
+        final var result = this.mapper.context(player, Lookup.invoke(ITEM, packet), view)
+                .withContainer(containerId, containerId == -1 ? ItemSlot.Window.CURSOR : ItemSlot.integer(slot))
+                .apply();
+        if (result.edited()) {
+            Lookup.invoke(SET_ITEM, packet, result.itemOrDefault(ItemRegistry.empty()));
+        }
+        return packet;
+    }
+}
