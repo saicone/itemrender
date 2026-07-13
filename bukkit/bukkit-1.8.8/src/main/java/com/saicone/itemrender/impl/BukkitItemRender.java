@@ -1,6 +1,7 @@
 package com.saicone.itemrender.impl;
 
 import com.saicone.itemrender.ItemMapperBus;
+import com.saicone.itemrender.WrappedItemRender;
 import com.saicone.itemrender.util.Lookup;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;

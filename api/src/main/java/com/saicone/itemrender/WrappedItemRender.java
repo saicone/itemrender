@@ -1,8 +1,5 @@
-package com.saicone.itemrender.impl;
+package com.saicone.itemrender;
 
-import com.saicone.itemrender.ItemContext;
-import com.saicone.itemrender.ItemRender;
-import com.saicone.itemrender.WrappedItemMapper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
