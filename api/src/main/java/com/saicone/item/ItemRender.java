@@ -1,6 +1,6 @@
 package com.saicone.item;
 
-import com.saicone.item.render.WrappedItemRender;
+import com.saicone.item.impl.WrappedItemRender;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
