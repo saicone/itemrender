@@ -50,7 +50,7 @@ public interface ItemSlot {
 
         static {
             for (int i = 0; i < INTEGER.length; i++) {
-                INTEGER[i] = new Any<>(i);
+                INTEGER[i] = new Any<>(i + LOW);
             }
         }
     }
