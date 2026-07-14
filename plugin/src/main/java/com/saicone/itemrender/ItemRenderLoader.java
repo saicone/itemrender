@@ -28,9 +28,27 @@ import java.util.jar.JarFile;
 
 public class ItemRenderLoader {
 
+    // Sanitize version
+    private static final MC VERSION;
+    static {
+        MC version = MC.version();
+        if (version.isNewerThanOrEquals(MC.V_26_1)) {
+            version = MC.fromString(version.major() + "." + version.feature());
+        } else {
+            for (int i = MC.values().size(); i-- > 0; ) {
+                final MC value = MC.values().get(i);
+                if (value.major() == version.major() && value.feature() == version.feature() && value.revision() == version.revision()) {
+                    version = value;
+                    break;
+                }
+            }
+        }
+        VERSION = version;
+    }
+
     private static final boolean MOJANG_MAPPED;
     static {
-        if (MC.version().isNewerThanOrEquals(MC.V_26_1)) {
+        if (VERSION.isNewerThanOrEquals(MC.V_26_1)) {
             MOJANG_MAPPED = true;
         } else {
             boolean mojangMapped = false;
@@ -47,15 +65,15 @@ public class ItemRenderLoader {
     private static final String DEPENDENCY_VERSION = "property.dependency.version";
     private static final String DEPENDENCY_CLASSIFIER;
     static {
-        if (MC.version().isNewerThanOrEquals(MC.V_1_17)) {
-            DEPENDENCY_ARTIFACT = "paper-" + MC.version();
+        if (VERSION.isNewerThanOrEquals(MC.V_1_17)) {
+            DEPENDENCY_ARTIFACT = "paper-" + VERSION;
             if (MOJANG_MAPPED) {
                 DEPENDENCY_CLASSIFIER = "";
             } else {
                 DEPENDENCY_CLASSIFIER = "reobf";
             }
         } else {
-            DEPENDENCY_ARTIFACT = "bukkit-" + MC.version();
+            DEPENDENCY_ARTIFACT = "bukkit-" + VERSION;
             DEPENDENCY_CLASSIFIER = "";
         }
     }
@@ -63,12 +81,12 @@ public class ItemRenderLoader {
     private static final String CLASS_ITEM_RENDER;
     static {
         final String type;
-        if (MC.version().isNewerThanOrEquals(MC.V_1_17)) {
+        if (VERSION.isNewerThanOrEquals(MC.V_1_17)) {
             type = "paper";
         } else {
             type = "bukkit";
         }
-        CLASS_ITEM_RENDER = "com.saicone.itemrender.{type}.{version}.MinecraftItemRender".replace("{type}", type).replace("{version}", MC.version().name());
+        CLASS_ITEM_RENDER = "com.saicone.itemrender.{type}.{version}.MinecraftItemRender".replace("{type}", type).replace("{version}", VERSION.name());
     }
 
     @NotNull
@@ -96,8 +114,8 @@ public class ItemRenderLoader {
 
     @Nullable
     public static Path localFile(@NotNull Class<?> source) {
-        final String fileName = DEPENDENCY_ARTIFACT + "-" + version() + (DEPENDENCY_CLASSIFIER.isEmpty() ? "" : "-" + DEPENDENCY_CLASSIFIER);
-        final String entryName = "META-INF/modules/" + fileName + ".jar.bin";
+        final String fileName = DEPENDENCY_ARTIFACT + (DEPENDENCY_CLASSIFIER.isEmpty() ? "" : "-" + DEPENDENCY_CLASSIFIER);
+        final String entryName = "META-INF/modules/" + fileName + ".jar";
 
         final CodeSource codeSource = source.getProtectionDomain().getCodeSource();
         try (JarFile jar = new JarFile(new File(codeSource.getLocation().toURI()))) {
@@ -141,12 +159,16 @@ public class ItemRenderLoader {
     }
 
     public void init() throws IOException {
+        plugin.getLogger().info("Detected version: " + VERSION);
+
         if (isRenderPresent()) {
+            plugin.getLogger().info("The render class is already on class path");
             return;
         }
 
         final Path localFile = ItemRenderLoader.localFile();
         if (localFile != null) {
+            plugin.getLogger().info("Local module was found on .jar file");
             classLoader = new PublicClassLoader(new URL[]{ localFile.toUri().toURL() }, plugin.getClass().getClassLoader());
             return;
         }

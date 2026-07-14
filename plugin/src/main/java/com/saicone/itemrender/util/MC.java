@@ -278,6 +278,17 @@ public final class MC implements Comparable<MC> {
     }
 
     /**
+     * Get all supported versions.
+     *
+     * @return a list of all supported versions.
+     */
+    @NotNull
+    @ApiStatus.Internal
+    public static List<MC> values() {
+        return VALUES;
+    }
+
+    /**
      * Get first supported version.
      *
      * @return the minimum supported version.

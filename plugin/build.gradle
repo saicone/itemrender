@@ -48,21 +48,21 @@ subprojects {
         archiveBaseName.set(rootProject.name + '-' + project.name.substring(7))
         archiveClassifier.set('fat')
 
-        from(shadowJar.archiveFile)
+        from(zipTree(shadowJar.archiveFile))
         rootProject.allprojects {
             if (it.name.startsWith("bukkit-") || it.name.startsWith("paper-")) {
                 dependsOn it.tasks.jar
 
                 def jarFile = it.layout.buildDirectory.dir('libs').get().file("${it.name}-${it.version}.jar")
                 from(jarFile) {
-                    rename { it + ".bin" }
+                    rename { fileName -> fileName.replace("-${project.version}", "") }
                     into('META-INF/modules')
                 }
 
                 if (it.name.startsWith("paper-")) {
                     def reobfJarFile = it.layout.buildDirectory.dir('libs').get().file("${it.name}-${it.version}-reobf.jar")
                     from(reobfJarFile) {
-                        rename { it + ".bin" }
+                        rename { fileName -> fileName.replace("-${project.version}", "") }
                         into('META-INF/modules')
                     }
                 }
