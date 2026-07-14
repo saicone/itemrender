@@ -16,7 +16,7 @@ allprojects {
     }
 
     jar {
-        enabled = false
+        archiveClassifier.set('plain')
         dependsOn (shadowJar)
     }
 

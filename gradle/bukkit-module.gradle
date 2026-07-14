@@ -22,9 +22,11 @@ if (module.depends != null) {
     }
 }
 
+def toPackage = 'com.saicone.itemrender.' + project.name.replace('.', '_').replace('-', '.V_')
 def toPackage1 = 'org.bukkit.craftbukkit' + module.package
 def toPackage2 = 'net.minecraft.server' + module.package
 shadowJar {
+    relocate 'com.saicone.itemrender.impl', toPackage
     for (final def entry in modules.entrySet()) {
         if (entry.key == project.name) {
             break

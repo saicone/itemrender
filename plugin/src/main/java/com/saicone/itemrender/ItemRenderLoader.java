@@ -1,6 +1,5 @@
-package com.saicone.itemrender.impl;
+package com.saicone.itemrender;
 
-import com.saicone.itemrender.ItemRender;
 import com.saicone.itemrender.network.PacketItemRender;
 import com.saicone.itemrender.util.MC;
 import com.saicone.itemrender.util.MavenMirror;
@@ -23,10 +22,17 @@ public class ItemRenderLoader {
 
     private static final String DEPENDENCY_GROUP = "${dependency_group}";
     private static final String DEPENDENCY_VERSION = "${dependency_version}";
-    private static final String ITEM_RENDER = "com.saicone.item.render.MinecraftItemRender";
+    private static final String CLASS_ITEM_RENDER;
+    static {
+        final String type;
+        if (MC.version().isNewerThanOrEquals(MC.V_1_17)) {
+            type = "paper";
+        } else {
+            type = "bukkit";
+        }
+        CLASS_ITEM_RENDER = "com.saicone.itemrender.{type}.{version}.MinecraftItemRender".replace("{type}", type).replace("{version}", MC.version().name());
+    }
     private static final boolean MOJANG_MAPPED;
-    private static final MC VERSION;
-
     static {
         boolean mojangMapped = false;
         try {
@@ -34,22 +40,11 @@ public class ItemRenderLoader {
             mojangMapped = true;
         } catch (ClassNotFoundException ignored) { }
         MOJANG_MAPPED = mojangMapped;
-
-        // Get latest version by revision, not by minor version
-        MC version = MC.version();
-        for (int i = MC.VALUES.length - 1; i >= 0; i--) {
-            final MC value = MC.VALUES[i];
-            if (value.feature() == MC.version().feature() && value.revision() == MC.version().revision()) {
-                version = value;
-                break;
-            }
-        }
-        VERSION = version;
     }
 
     public static boolean isRenderPresent() {
         try {
-            Class.forName(ITEM_RENDER);
+            Class.forName(CLASS_ITEM_RENDER);
             return true;
         } catch (ClassNotFoundException ignored) { }
         return false;
@@ -64,15 +59,15 @@ public class ItemRenderLoader {
     public static String dependency(@NotNull String format) {
         final String artifact;
         final String classifier;
-        if (VERSION.isNewerThanOrEquals(MC.V_1_17)) {
-            artifact = "paper-" + VERSION.formatted();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_17)) {
+            artifact = "paper-" + MC.version();
             if (MOJANG_MAPPED) {
                 classifier = "";
             } else {
                 classifier = ":reobf";
             }
         } else {
-            artifact = "bukkit-" + VERSION.formatted();
+            artifact = "bukkit-" + MC.version();
             classifier = "";
         }
         return format.replace("group", DEPENDENCY_GROUP.replace("{}", "."))
@@ -134,7 +129,7 @@ public class ItemRenderLoader {
 
     @SuppressWarnings("unchecked")
     public void load(boolean inject, boolean register) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        final Class<? extends ItemRender> renderType = Class.forName(ITEM_RENDER, true, getClassLoader()).asSubclass(ItemRender.class);
+        final Class<? extends ItemRender> renderType = Class.forName(CLASS_ITEM_RENDER, true, getClassLoader()).asSubclass(ItemRender.class);
         itemRender = (PacketItemRender<Player, Object, Object>) renderType.getDeclaredConstructor(Plugin.class, boolean.class, boolean.class).newInstance(plugin, inject, register);
     }
 

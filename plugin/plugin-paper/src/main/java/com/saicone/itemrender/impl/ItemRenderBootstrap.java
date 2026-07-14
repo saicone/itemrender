@@ -1,5 +1,7 @@
 package com.saicone.itemrender.impl;
 
+import com.saicone.itemrender.ItemRenderLoader;
+import com.saicone.itemrender.ItemRenderPlugin;
 import com.saicone.itemrender.util.MavenMirror;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;

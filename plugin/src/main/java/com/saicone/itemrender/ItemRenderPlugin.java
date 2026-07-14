@@ -1,4 +1,4 @@
-package com.saicone.itemrender.impl;
+package com.saicone.itemrender;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;

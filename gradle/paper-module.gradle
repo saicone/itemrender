@@ -47,14 +47,16 @@ signMavenPublication {
     dependsOn(reobfJar)
 }
 
-def toPackage = 'org.bukkit.craftbukkit' + (module.package ?: '')
+def toPackage = 'com.saicone.itemrender.' + project.name.replace('.', '_').replace('-', '.V_')
+def toPackage1 = 'org.bukkit.craftbukkit' + (module.package ?: '')
 shadowJar {
+    relocate 'com.saicone.itemrender.impl', toPackage
     for (final def entry in modules.entrySet()) {
         if (entry.key == project.name || entry.value.package == null) {
             break
         }
-        def fromPackage = 'org.bukkit.craftbukkit' + entry.value.package
-        relocate fromPackage, toPackage
+        def fromPackage1 = 'org.bukkit.craftbukkit' + entry.value.package
+        relocate fromPackage1, toPackage1
     }
 }
 
