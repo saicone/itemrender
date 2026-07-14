@@ -1,19 +1,20 @@
-package com.saicone.itemrender.impl;
+package com.saicone.itemrender;
 
-import com.saicone.itemrender.ItemRenderLoader;
-import com.saicone.itemrender.ItemRenderPlugin;
 import com.saicone.itemrender.util.MavenMirror;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext;
 import io.papermc.paper.plugin.loader.PluginClasspathBuilder;
 import io.papermc.paper.plugin.loader.PluginLoader;
+import io.papermc.paper.plugin.loader.library.impl.JarLibrary;
 import io.papermc.paper.plugin.loader.library.impl.MavenLibraryResolver;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.jetbrains.annotations.NotNull;
+
+import java.nio.file.Path;
 
 public class ItemRenderBootstrap implements PluginBootstrap, PluginLoader {
 
@@ -23,11 +24,16 @@ public class ItemRenderBootstrap implements PluginBootstrap, PluginLoader {
             return;
         }
 
-        MavenLibraryResolver resolver = new MavenLibraryResolver();
-        resolver.addDependency(new Dependency(new DefaultArtifact(ItemRenderLoader.dependency("group:artifact:classifier:version")), null));
-        resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenMirror.getOrDefault(MavenMirror.DEFAULT)).build());
+        final Path localFile = ItemRenderLoader.localFile();
+        if (localFile == null) {
+            MavenLibraryResolver resolver = new MavenLibraryResolver();
+            resolver.addDependency(new Dependency(new DefaultArtifact(ItemRenderLoader.dependency("group:artifact:classifier:version")), null));
+            resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenMirror.getOrDefault(MavenMirror.DEFAULT)).build());
 
-        classpathBuilder.addLibrary(resolver);
+            classpathBuilder.addLibrary(resolver);
+        } else {
+            classpathBuilder.addLibrary(new JarLibrary(localFile));
+        }
     }
 
     @Override
