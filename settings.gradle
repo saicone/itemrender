@@ -41,7 +41,8 @@ include(
         ':paper:paper-1.21.5',
         ':paper:paper-1.21.8',
         ':paper:paper-1.21.10',
-        ':paper:paper-1.21.11'
+        ':paper:paper-1.21.11',
+        ':paper:paper-26.1'
 )
 
 // Plugin / Loader

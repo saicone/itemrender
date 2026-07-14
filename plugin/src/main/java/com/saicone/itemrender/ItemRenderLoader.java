@@ -30,12 +30,16 @@ public class ItemRenderLoader {
 
     private static final boolean MOJANG_MAPPED;
     static {
-        boolean mojangMapped = false;
-        try {
-            Class.forName("net.minecraft.nbt.CompoundTag");
-            mojangMapped = true;
-        } catch (ClassNotFoundException ignored) { }
-        MOJANG_MAPPED = mojangMapped;
+        if (MC.version().isNewerThanOrEquals(MC.V_26_1)) {
+            MOJANG_MAPPED = true;
+        } else {
+            boolean mojangMapped = false;
+            try {
+                Class.forName("net.minecraft.nbt.CompoundTag");
+                mojangMapped = true;
+            } catch (ClassNotFoundException ignored) { }
+            MOJANG_MAPPED = mojangMapped;
+        }
     }
 
     private static final String DEPENDENCY_GROUP = "property.dependency.group";
