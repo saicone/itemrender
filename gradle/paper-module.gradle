@@ -15,7 +15,8 @@ def modules = [
         'paper-1.21.3': [ depends: ':paper:paper-1.20.6' ],
         'paper-1.21.4': [ depends: ':paper:paper-1.21.3' ],
         'paper-1.21.5': [ depends: ':paper:paper-1.21.3' ],
-        'paper-1.21.8': [ depends: ':paper:paper-1.21.5' ]
+        'paper-1.21.8': [ depends: ':paper:paper-1.21.5' ],
+        'paper-1.21.10': [ depends: ':paper:paper-1.21.5' ]
 ]
 
 def module = modules[project.name]
