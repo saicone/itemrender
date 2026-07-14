@@ -4,9 +4,9 @@ apply plugin: 'signing'
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId project.group
-            artifactId rootProject.name + '-' + project.name
-            version project.version
+            groupId = project.group
+            artifactId = rootProject.name + '-' + project.name
+            version = project.version
 
             pom {
                 afterEvaluate {

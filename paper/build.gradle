@@ -1,5 +1,5 @@
 plugins {
-    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.18' apply false
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.21' apply false
 }
 
 description = 'ItemRender Paper'
@@ -8,7 +8,7 @@ allprojects {
     apply plugin: 'com.gradleup.shadow'
 
     repositories {
-        maven { url 'https://repo.papermc.io/repository/maven-public/' }
+        maven { url = uri('https://repo.papermc.io/repository/maven-public/') }
     }
 
     jar {
@@ -28,7 +28,7 @@ subprojects {
 }
 
 repositories {
-    maven { url 'https://repo.codemc.io/repository/nms/' }
+    maven { url = uri('https://repo.codemc.io/repository/nms/') }
 }
 
 dependencies {

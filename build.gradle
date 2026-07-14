@@ -1,5 +1,5 @@
 plugins {
-    id 'com.gradleup.shadow' version '8.3.5' apply false
+    id 'com.gradleup.shadow' version '9.5.1' apply false
 }
 
 description = 'ItemRender'
@@ -22,9 +22,9 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url 'https://repo.codemc.io/repository/nms/' }
-        maven { url 'https://jitpack.io' }
-        maven { url 'https://libraries.minecraft.net' }
+        maven { url = uri('https://repo.codemc.io/repository/nms/') }
+        maven { url = uri('https://jitpack.io') }
+        maven { url = uri('https://libraries.minecraft.net') }
     }
 
     dependencies {

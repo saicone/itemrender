@@ -5,7 +5,7 @@ allprojects {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
         from(sourceSets.main.resources.srcDirs) {
             include '**/*.yml'
-            expand(project.properties)
+            expand('version': project.version)
         }
     }
 }
@@ -91,9 +91,9 @@ subprojects {
 }
 
 repositories {
-    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url 'https://oss.sonatype.org/content/repositories/central' }
+    maven { url = uri('https://hub.spigotmc.org/nexus/content/repositories/snapshots/') }
+    maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots') }
+    maven { url = uri('https://oss.sonatype.org/content/repositories/central') }
 }
 
 dependencies {

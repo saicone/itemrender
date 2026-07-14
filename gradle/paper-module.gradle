@@ -82,7 +82,7 @@ publishing {
             }
 
             artifact(reobfJarFile) {
-                classifier 'reobf'
+                classifier = 'reobf'
             }
         }
     }
