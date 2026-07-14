@@ -4,7 +4,7 @@ import com.saicone.itemrender.mapper.WrappedItemMapperImpl;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public interface WrappedItemMapper<PlayerT, ItemA, ItemB> extends ItemMapper<PlayerT, ItemA>, ItemWrapper<ItemA, ItemB> {
+public interface WrappedItemMapper<ViewerT, ItemA, ItemB> extends ItemMapper<ViewerT, ItemA>, ItemWrapper<ItemA, ItemB> {
 
     int DEFAULT_PRIORITY = 10000;
 
@@ -13,7 +13,7 @@ public interface WrappedItemMapper<PlayerT, ItemA, ItemB> extends ItemMapper<Pla
         return DEFAULT_PRIORITY;
     }
 
-    void wrapAndApply(@NotNull ItemContext<PlayerT, ItemB> context);
+    void wrapAndApply(@NotNull ItemContext<ViewerT, ItemB> context);
 
     @NotNull
     static <PlayerT, ItemA, ItemB> Builder<PlayerT, ItemA, ItemB> builder(@NotNull String key) {

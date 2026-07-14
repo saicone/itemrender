@@ -7,19 +7,19 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, ItemT> {
+public abstract class ItemRender<ViewerT, ItemT> extends ItemMapperBus<ViewerT, ItemT> {
 
-    private final Map<Class<?>, ItemRender<PlayerT, ?>> subRenders = new HashMap<>();
+    private final Map<Class<?>, ItemRender<ViewerT, ?>> subRenders = new HashMap<>();
 
     @NotNull
-    public abstract Class<PlayerT> playerType();
+    public abstract Class<ViewerT> viewerType();
 
     public abstract void load();
 
     @NotNull
     @SuppressWarnings("unchecked")
-    public <ItemA> ItemRender<PlayerT, ItemA> using(@NotNull Class<ItemA> type) {
-        ItemRender<PlayerT, ItemA> render = (WrappedItemRender<PlayerT, ItemA, ItemT>) subRenders.get(type);
+    public <ItemA> ItemRender<ViewerT, ItemA> using(@NotNull Class<ItemA> type) {
+        ItemRender<ViewerT, ItemA> render = (WrappedItemRender<ViewerT, ItemA, ItemT>) subRenders.get(type);
         if (render == null) {
             render = createSubRender(type);
             if (render == null) {
@@ -31,16 +31,16 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
     }
 
     @NotNull
-    public <ItemA> ItemRender<PlayerT, ItemA> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
-        final WrappedItemRender<PlayerT, ItemA, ItemT> wrapped = new WrappedItemRender<>() {
+    public <ItemA> ItemRender<ViewerT, ItemA> using(@NotNull ItemWrapper<ItemA, ItemT> wrapper) {
+        final WrappedItemRender<ViewerT, ItemA, ItemT> wrapped = new WrappedItemRender<>() {
             @Override
-            protected @NotNull ItemMapperBus<PlayerT, ?> parent() {
+            protected @NotNull ItemMapperBus<ViewerT, ?> parent() {
                 return ItemRender.this;
             }
 
             @Override
-            public @NotNull Class<PlayerT> playerType() {
-                return ItemRender.this.playerType();
+            public @NotNull Class<ViewerT> viewerType() {
+                return ItemRender.this.viewerType();
             }
 
             @Override
@@ -64,7 +64,7 @@ public abstract class ItemRender<PlayerT, ItemT> extends ItemMapperBus<PlayerT, 
 
     @ApiStatus.Experimental
     @Nullable
-    protected <ItemA> ItemRender<PlayerT, ItemA> createSubRender(@NotNull Class<ItemA> type) {
+    protected <ItemA> ItemRender<ViewerT, ItemA> createSubRender(@NotNull Class<ItemA> type) {
         return null;
     }
 }

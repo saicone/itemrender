@@ -21,7 +21,7 @@ public class BukkitItemRender extends WrappedItemRender<Player, org.bukkit.inven
     }
 
     @Override
-    public @NotNull Class<Player> playerType() {
+    public @NotNull Class<Player> viewerType() {
         return Player.class;
     }
 

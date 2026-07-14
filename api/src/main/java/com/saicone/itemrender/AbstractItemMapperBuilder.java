@@ -7,13 +7,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class AbstractItemMapperBuilder<PlayerT, ItemT, MapperT extends ItemMapper<PlayerT, ItemT>, BuilderT extends ItemMapperBuilder<PlayerT, ItemT, MapperT, BuilderT>> implements ItemMapperBuilder<PlayerT, ItemT, MapperT, BuilderT> {
+public abstract class AbstractItemMapperBuilder<ViewerT, ItemT, MapperT extends ItemMapper<ViewerT, ItemT>, BuilderT extends ItemMapperBuilder<ViewerT, ItemT, MapperT, BuilderT>> implements ItemMapperBuilder<ViewerT, ItemT, MapperT, BuilderT> {
 
     protected final String key;
 
     protected int priority = 0;
     protected final Set<ItemView> views = new HashSet<>();
-    protected Consumer<ItemContext<PlayerT, ItemT>> apply;
+    protected Consumer<ItemContext<ViewerT, ItemT>> apply;
     protected BiConsumer<Object, Throwable> report;
 
     protected AbstractItemMapperBuilder(@NotNull String key) {
@@ -37,7 +37,7 @@ public abstract class AbstractItemMapperBuilder<PlayerT, ItemT, MapperT extends 
     }
 
     @Override
-    public @NotNull BuilderT apply(@NotNull Consumer<ItemContext<PlayerT, ItemT>> consumer) {
+    public @NotNull BuilderT apply(@NotNull Consumer<ItemContext<ViewerT, ItemT>> consumer) {
         this.apply = consumer;
         return get();
     }

@@ -15,15 +15,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @ApiStatus.Internal
-public class ItemMapperImpl<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
+public class ItemMapperImpl<ViewerT, ItemT> implements ItemMapper<ViewerT, ItemT> {
 
     private final String key;
     private final int priority;
     private final Set<ItemView> views;
-    private final Consumer<ItemContext<PlayerT, ItemT>> apply;
+    private final Consumer<ItemContext<ViewerT, ItemT>> apply;
     private final BiConsumer<Object, Throwable> report;
 
-    public ItemMapperImpl(@NotNull String key, int priority, @NotNull Set<ItemView> views, @NotNull Consumer<ItemContext<PlayerT, ItemT>> apply, @Nullable BiConsumer<Object, Throwable> report) {
+    public ItemMapperImpl(@NotNull String key, int priority, @NotNull Set<ItemView> views, @NotNull Consumer<ItemContext<ViewerT, ItemT>> apply, @Nullable BiConsumer<Object, Throwable> report) {
         this.key = key;
         this.priority = priority;
         this.views = views;
@@ -47,7 +47,7 @@ public class ItemMapperImpl<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT
     }
 
     @Override
-    public void apply(@NotNull ItemContext<PlayerT, ItemT> context) {
+    public void apply(@NotNull ItemContext<ViewerT, ItemT> context) {
         apply.accept(context);
     }
 
@@ -61,19 +61,19 @@ public class ItemMapperImpl<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT
     }
 
     @ApiStatus.Internal
-    public static class BuilderImpl<PlayerT, ItemT> extends AbstractItemMapperBuilder<PlayerT, ItemT, ItemMapper<PlayerT, ItemT>, ItemMapper.Builder<PlayerT, ItemT>> implements ItemMapper.Builder<PlayerT, ItemT> {
+    public static class BuilderImpl<ViewerT, ItemT> extends AbstractItemMapperBuilder<ViewerT, ItemT, ItemMapper<ViewerT, ItemT>, ItemMapper.Builder<ViewerT, ItemT>> implements ItemMapper.Builder<ViewerT, ItemT> {
 
         public BuilderImpl(@NotNull String key) {
             super(key);
         }
 
         @Override
-        protected BuilderImpl<PlayerT, ItemT> get() {
+        protected BuilderImpl<ViewerT, ItemT> get() {
             return this;
         }
 
         @Override
-        public @NotNull ItemMapper<PlayerT, ItemT> build() {
+        public @NotNull ItemMapper<ViewerT, ItemT> build() {
             Objects.requireNonNull(this.apply, "Cannot create ItemMapper without 'apply' function");
             return new ItemMapperImpl<>(this.key, this.priority, this.views, this.apply, this.report);
         }

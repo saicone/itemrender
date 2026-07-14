@@ -14,20 +14,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
-public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<PlayerT, ItemT> {
+public abstract class ItemMapperBus<ViewerT, ItemT> implements ItemMapper<ViewerT, ItemT> {
 
-    private final ThreadLocal<ItemContext<PlayerT, ItemT>> context = ThreadLocal.withInitial(() -> new ItemContext<>(this));
-    protected final Map<ItemView, List<ItemMapper<PlayerT, ?>>> mappers = new HashMap<>();
+    private final ThreadLocal<ItemContext<ViewerT, ItemT>> context = ThreadLocal.withInitial(() -> new ItemContext<>(this));
+    protected final Map<ItemView, List<ItemMapper<ViewerT, ?>>> mappers = new HashMap<>();
 
     @Nullable
     @ApiStatus.Internal
-    protected ItemMapperBus<PlayerT, ?> parent() {
+    protected ItemMapperBus<ViewerT, ?> parent() {
         return null;
     }
 
     @NotNull
-    public List<ItemMapper<PlayerT, ?>> mappers(@NotNull ItemView view) {
-        final List<ItemMapper<PlayerT, ?>> list = this.mappers.get(view);
+    public List<ItemMapper<ViewerT, ?>> mappers(@NotNull ItemView view) {
+        final List<ItemMapper<ViewerT, ?>> list = this.mappers.get(view);
         if (list == null) {
             return List.of();
         }
@@ -35,8 +35,8 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
     }
 
     public boolean contains(@NotNull String key) {
-        for (Map.Entry<ItemView, List<ItemMapper<PlayerT, ?>>> entry : this.mappers.entrySet()) {
-            for (ItemMapper<PlayerT, ?> mapper : entry.getValue()) {
+        for (Map.Entry<ItemView, List<ItemMapper<ViewerT, ?>>> entry : this.mappers.entrySet()) {
+            for (ItemMapper<ViewerT, ?> mapper : entry.getValue()) {
                 if (mapper.key().equals(key)) {
                     return true;
                 }
@@ -46,11 +46,11 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
     }
 
     public boolean contains(@NotNull ItemView view, @NotNull String key) {
-        final List<ItemMapper<PlayerT, ?>> list = this.mappers.get(view);
+        final List<ItemMapper<ViewerT, ?>> list = this.mappers.get(view);
         if (list == null) {
             return false;
         }
-        for (ItemMapper<PlayerT, ?> mapper : list) {
+        for (ItemMapper<ViewerT, ?> mapper : list) {
             if (mapper.key().equals(key)) {
                 return true;
             }
@@ -58,15 +58,15 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
         return false;
     }
 
-    public void register(@NotNull ItemMapper<PlayerT, ItemT> mapper) {
+    public void register(@NotNull ItemMapper<ViewerT, ItemT> mapper) {
         compute(mapper);
     }
 
-    public void register(@NotNull WrappedItemMapper<PlayerT, ?, ItemT> mapper) {
+    public void register(@NotNull WrappedItemMapper<ViewerT, ?, ItemT> mapper) {
         compute(mapper);
     }
 
-    public void unregister(@NotNull ItemMapper<PlayerT, ?> mapper) {
+    public void unregister(@NotNull ItemMapper<ViewerT, ?> mapper) {
         removeIf((view, element) -> element == mapper);
     }
 
@@ -74,9 +74,9 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
         removeIf((view, element) -> element.key().equals(key));
     }
 
-    protected void compute(@NotNull ItemMapper<PlayerT, ?> mapper) {
+    protected void compute(@NotNull ItemMapper<ViewerT, ?> mapper) {
         for (ItemView view : mapper.views()) {
-            List<ItemMapper<PlayerT, ?>> list = this.mappers.get(view);
+            List<ItemMapper<ViewerT, ?>> list = this.mappers.get(view);
             if (list == null) {
                 list = new ArrayList<>();
                 this.mappers.put(view, list);
@@ -95,9 +95,9 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
                 list.add(mapper);
                 continue;
             }
-            final ListIterator<ItemMapper<PlayerT, ?>> iterator = list.listIterator();
+            final ListIterator<ItemMapper<ViewerT, ?>> iterator = list.listIterator();
             while (iterator.hasNext()) {
-                final ItemMapper<PlayerT, ?> element = iterator.next();
+                final ItemMapper<ViewerT, ?> element = iterator.next();
                 if (mapper.priority() >= element.priority()) {
                     iterator.add(mapper);
                     break;
@@ -105,24 +105,24 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
             }
         }
 
-        final ItemMapperBus<PlayerT, ?> parent = parent();
+        final ItemMapperBus<ViewerT, ?> parent = parent();
         if (parent != null) {
             parent.removeIf((view, element) -> element == this && !this.mappers.containsKey(view));
             parent.compute(this);
         }
     }
 
-    protected void removeIf(@NotNull BiPredicate<ItemView, ItemMapper<PlayerT, ?>> predicate) {
-        final Iterator<Map.Entry<ItemView, List<ItemMapper<PlayerT, ?>>>> iterator = this.mappers.entrySet().iterator();
+    protected void removeIf(@NotNull BiPredicate<ItemView, ItemMapper<ViewerT, ?>> predicate) {
+        final Iterator<Map.Entry<ItemView, List<ItemMapper<ViewerT, ?>>>> iterator = this.mappers.entrySet().iterator();
         while (iterator.hasNext()) {
-            final Map.Entry<ItemView, List<ItemMapper<PlayerT, ?>>> entry = iterator.next();
+            final Map.Entry<ItemView, List<ItemMapper<ViewerT, ?>>> entry = iterator.next();
             entry.getValue().removeIf(element -> predicate.test(entry.getKey(), element));
             if (entry.getValue().isEmpty()) {
                 iterator.remove();
             }
         }
 
-        final ItemMapperBus<PlayerT, ?> parent = parent();
+        final ItemMapperBus<ViewerT, ?> parent = parent();
         if (parent != null) {
             parent.removeIf((view, element) -> element == this && !this.mappers.containsKey(view));
         }
@@ -142,21 +142,21 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
 
     @Override
     @SuppressWarnings("unchecked")
-    public void apply(@NotNull ItemContext<PlayerT, ItemT> context) {
+    public void apply(@NotNull ItemContext<ViewerT, ItemT> context) {
         if (this.mappers.isEmpty()) {
             return;
         }
-        final List<ItemMapper<PlayerT, ?>> mappers = this.mappers.get(context.view());
+        final List<ItemMapper<ViewerT, ?>> mappers = this.mappers.get(context.view());
         if (mappers == null) {
             return;
         }
-        for (ItemMapper<PlayerT, ?> mapper : mappers) {
+        for (ItemMapper<ViewerT, ?> mapper : mappers) {
             try {
                 if (mapper instanceof WrappedItemMapper) {
-                    final WrappedItemMapper<PlayerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<PlayerT, Object, ItemT>) mapper;
+                    final WrappedItemMapper<ViewerT, Object, ItemT> wrappedMapper = (WrappedItemMapper<ViewerT, Object, ItemT>) mapper;
                     wrappedMapper.wrapAndApply(context);
                 } else {
-                    ((ItemMapper<PlayerT, ItemT>) mapper).apply(context);
+                    ((ItemMapper<ViewerT, ItemT>) mapper).apply(context);
                 }
             } catch (Throwable t) {
                 mapper.report(this, t);
@@ -165,9 +165,9 @@ public abstract class ItemMapperBus<PlayerT, ItemT> implements ItemMapper<Player
     }
 
     @Override
-    public @NotNull ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
+    public @NotNull ItemContext<ViewerT, ItemT> context(@NotNull ViewerT player, @Nullable ItemT item, @NotNull ItemView view) {
         // Instead of regular ItemMapper, this instance create an ItemContext per thread to save resources
-        final ItemContext<PlayerT, ItemT> context = this.context.get();
+        final ItemContext<ViewerT, ItemT> context = this.context.get();
         context.rotate(player, item, view);
         return context;
     }

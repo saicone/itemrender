@@ -5,11 +5,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ItemContext<PlayerT, ItemT> {
+public class ItemContext<ViewerT, ItemT> {
 
-    private final ItemMapper<PlayerT, ItemT> owner;
+    private final ItemMapper<ViewerT, ItemT> owner;
 
-    private PlayerT player;
+    private ViewerT player;
     private ItemT item;
     private ItemView view;
     private ItemSlot slot;
@@ -19,12 +19,12 @@ public class ItemContext<PlayerT, ItemT> {
     private transient boolean cancel; // Magic value, for now doesn't do anything
     private transient boolean edited;
 
-    public ItemContext(@NotNull ItemMapper<PlayerT, ItemT> owner) {
+    public ItemContext(@NotNull ItemMapper<ViewerT, ItemT> owner) {
         this.owner = owner;
     }
 
     @ApiStatus.Internal
-    public void rotate(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
+    public void rotate(@NotNull ViewerT player, @Nullable ItemT item, @NotNull ItemView view) {
         this.player = player;
         this.item = item;
         this.view = view;
@@ -63,7 +63,7 @@ public class ItemContext<PlayerT, ItemT> {
 
     @NotNull
     @Contract("_ -> this")
-    public ItemContext<PlayerT, ItemT> with(@NotNull ItemContext<?, ?> context) {
+    public ItemContext<ViewerT, ItemT> with(@NotNull ItemContext<?, ?> context) {
         this.slot = context.slot;
         this.containerId = context.containerId;
         this.entityId = context.entityId;
@@ -72,14 +72,14 @@ public class ItemContext<PlayerT, ItemT> {
 
     @NotNull
     @Contract("_ -> this")
-    public ItemContext<PlayerT, ItemT> withSlot(@Nullable ItemSlot slot) {
+    public ItemContext<ViewerT, ItemT> withSlot(@Nullable ItemSlot slot) {
         this.slot = slot;
         return this;
     }
 
     @NotNull
     @Contract("_, _ -> this")
-    public ItemContext<PlayerT, ItemT> withContainer(int containerId, @NotNull ItemSlot slot) {
+    public ItemContext<ViewerT, ItemT> withContainer(int containerId, @NotNull ItemSlot slot) {
         this.slot = slot;
         this.containerId = containerId;
         return this;
@@ -87,14 +87,14 @@ public class ItemContext<PlayerT, ItemT> {
 
     @NotNull
     @Contract("_ -> this")
-    public ItemContext<PlayerT, ItemT> withEntity(int entityId) {
+    public ItemContext<ViewerT, ItemT> withEntity(int entityId) {
         this.entityId = entityId;
         return this;
     }
 
     @NotNull
     @Contract("-> this")
-    public ItemContext<PlayerT, ItemT> apply() {
+    public ItemContext<ViewerT, ItemT> apply() {
         owner.apply(this);
         return this;
     }
@@ -104,7 +104,7 @@ public class ItemContext<PlayerT, ItemT> {
     }
 
     @NotNull
-    public PlayerT player() {
+    public ViewerT player() {
         return player;
     }
 

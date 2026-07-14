@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-public interface ItemMapper<PlayerT, ItemT> {
+public interface ItemMapper<ViewerT, ItemT> {
 
     @NotNull
     default String key() {
@@ -24,25 +24,30 @@ public interface ItemMapper<PlayerT, ItemT> {
         return views().contains(view);
     }
 
-    void apply(@NotNull ItemContext<PlayerT, ItemT> context);
+    void apply(@NotNull ItemContext<ViewerT, ItemT> context);
 
     default void report(@NotNull Object executor, @NotNull Throwable throwable) {
         new RuntimeException("There is an error while executing " + key() + " on " + executor.getClass().getName(), throwable).printStackTrace();
     }
 
     @NotNull
-    default ItemContext<PlayerT, ItemT> context(@NotNull PlayerT player, @Nullable ItemT item, @NotNull ItemView view) {
-        final ItemContext<PlayerT, ItemT> context = new ItemContext<>(this);
+    default ItemContext<ViewerT, ItemT> context(@NotNull ViewerT player, @Nullable ItemT item, @NotNull ItemView view) {
+        final ItemContext<ViewerT, ItemT> context = new ItemContext<>(this);
         context.rotate(player, item, view);
         return context;
     }
 
     @NotNull
-    static <PlayerT, ItemT> Builder<PlayerT, ItemT> builder(@NotNull String key) {
+    static <ViewerT, ItemT> Builder<ViewerT, ItemT> builder(@NotNull String key) {
         return new ItemMapperImpl.BuilderImpl<>(key);
     }
 
-    interface Builder<PlayerT, ItemT> extends ItemMapperBuilder<PlayerT, ItemT, ItemMapper<PlayerT, ItemT>, Builder<PlayerT, ItemT>> {
+    @NotNull
+    static <ViewerT, ItemT> Builder<ViewerT, ItemT> builder(@NotNull String key, @NotNull Class<ViewerT> playerClass, @NotNull Class<ItemT> itemClass) {
+        return new ItemMapperImpl.BuilderImpl<>(key);
+    }
+
+    interface Builder<ViewerT, ItemT> extends ItemMapperBuilder<ViewerT, ItemT, ItemMapper<ViewerT, ItemT>, Builder<ViewerT, ItemT>> {
     }
 
 }

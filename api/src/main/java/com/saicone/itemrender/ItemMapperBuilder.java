@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public interface ItemMapperBuilder<PlayerT, ItemT, MapperT extends ItemMapper<PlayerT, ItemT>, BuilderT extends ItemMapperBuilder<PlayerT, ItemT, MapperT, BuilderT>> {
+public interface ItemMapperBuilder<ViewerT, ItemT, MapperT extends ItemMapper<ViewerT, ItemT>, BuilderT extends ItemMapperBuilder<ViewerT, ItemT, MapperT, BuilderT>> {
 
     @NotNull
     @Contract("_ -> this")
@@ -25,7 +25,7 @@ public interface ItemMapperBuilder<PlayerT, ItemT, MapperT extends ItemMapper<Pl
 
     @NotNull
     @Contract("_ -> this")
-    BuilderT apply(@NotNull Consumer<ItemContext<PlayerT, ItemT>> consumer);
+    BuilderT apply(@NotNull Consumer<ItemContext<ViewerT, ItemT>> consumer);
 
     @NotNull
     @Contract("_ -> this")

@@ -50,7 +50,7 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
     }
 
     @Override
-    public @NotNull Class<Player> playerType() {
+    public @NotNull Class<Player> viewerType() {
         return Player.class;
     }
 
@@ -61,8 +61,8 @@ public class MinecraftItemRender extends PacketItemRender<Player, ItemStack, Pac
     }
 
     @Override
-    public boolean creative(@NotNull Player player) {
-        return player.getGameMode() == GameMode.CREATIVE;
+    public boolean creative(@NotNull Player viewer) {
+        return viewer.getGameMode() == GameMode.CREATIVE;
     }
 
     @Override
