@@ -15,17 +15,11 @@ public class ItemRenderPlugin extends JavaPlugin {
     private final ItemRenderLoader renderLoader;
 
     public ItemRenderPlugin() {
-        this(true);
-    }
-
-    public ItemRenderPlugin(boolean initializeLoader) {
         this.renderLoader = new ItemRenderLoader(this);
-        if (initializeLoader) {
-            try {
-                renderLoader.init();
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot initialize ItemRenderLoader", t);
-            }
+        try {
+            renderLoader.init();
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot initialize ItemRenderLoader", t);
         }
     }
 
